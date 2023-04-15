@@ -1,0 +1,26 @@
+.stats-map {
+	background-color: #f2f2f2;
+	border-radius: 8px;
+	border: solid 1px #cccccc;
+	overflow: hidden;
+	
+	width: 848px;
+	max-width: 100%;
+
+	aspect-ratio: 848 / 424;
+}
+th { background-color: white; }
+td { background-color: white; }
+
+.svgMap-map-wrapper {
+	background-color: white;
+}
+.svgMap-map-wrapper .svgMap-country {
+	stroke: #cccccc;
+}
+
+.svgMap-tooltip-title {
+	font-size: 18px;
+	font-weight: bold;
+	color: #333333;
+}

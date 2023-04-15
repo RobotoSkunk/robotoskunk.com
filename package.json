@@ -1,0 +1,85 @@
+{
+	"name": "robotoskunk.com",
+	"version": "2.1.0",
+	"description": "Main website",
+	"main": "dist/index.js",
+	"types": "src/types/index.d.ts",
+	"scripts": {
+		"start": "pm2 start pm2.config.js --env production",
+		"debug": "nodemon .",
+		"pm2dev": "pm2 start pm2.dev.config.js --env development",
+		"mailer": "pm2 start pm2.mailer.config.js --env production",
+		"build": "tsc",
+		"build:dev": "tsc -w",
+		"setup": "npm i && npm run build"
+	},
+	"keywords": [
+		"website",
+		"skunk"
+	],
+	"author": "robotoskunk",
+	"license": "ISC",
+	"dependencies": {
+		"@zxcvbn-ts/core": "^2.2.1",
+		"@zxcvbn-ts/language-common": "^2.0.1",
+		"@zxcvbn-ts/language-en": "^2.1.0",
+		"@zxcvbn-ts/language-es-es": "^2.1.1",
+		"@zxcvbn-ts/language-fr": "^2.2.0",
+		"@zxcvbn-ts/language-pt-br": "^2.1.1",
+		"argon2": "^0.30.3",
+		"bcrypt": "^5.1.0",
+		"clean-css": "^5.3.2",
+		"compression": "^1.7.4",
+		"cookie-parser": "^1.4.6",
+		"cors": "^2.8.5",
+		"dotenv": "^16.0.3",
+		"ejs": "^3.1.8",
+		"express": "^4.18.2",
+		"express-useragent": "^1.0.15",
+		"helmet": "^6.0.1",
+		"http-errors": "^2.0.0",
+		"morgan": "^1.10.0",
+		"mysql": "^2.18.1",
+		"nodemailer": "^6.9.1",
+		"on-headers": "^1.0.2",
+		"otplib": "^12.0.1",
+		"pg": "^8.10.0",
+		"qrcode": "^1.5.1",
+		"rate-limiter-flexible": "^2.4.1",
+		"recursive-routing": "^1.2.1",
+		"safe-stable-stringify": "^2.4.2",
+		"source-map-support": "^0.5.21",
+		"uglify-js": "^3.17.4",
+		"websocket": "^1.0.34",
+		"winston": "^3.8.2"
+	},
+	"devDependencies": {
+		"@types/bcrypt": "^5.0.0",
+		"@types/clean-css": "^4.2.6",
+		"@types/compression": "^1.7.2",
+		"@types/cookie-parser": "^1.4.3",
+		"@types/cors": "^2.8.13",
+		"@types/ejs": "^3.1.2",
+		"@types/express-minify": "^0.1.35",
+		"@types/express-useragent": "^1.0.2",
+		"@types/http-errors": "^2.0.1",
+		"@types/morgan": "^1.9.4",
+		"@types/mysql": "^2.15.21",
+		"@types/node": "^18.14.6",
+		"@types/nodemailer": "^6.4.7",
+		"@types/on-headers": "^1.0.0",
+		"@types/pg": "^8.6.6",
+		"@types/qrcode": "^1.5.0",
+		"@types/uglify-js": "^3.17.1",
+		"@types/websocket": "^1.0.5"
+	},
+	"nodemonConfig": {
+		"watch": [
+			"dist/"
+		],
+		"delay": "250",
+		"env": {
+			"NODE_ENV": "development"
+		}
+	}
+}

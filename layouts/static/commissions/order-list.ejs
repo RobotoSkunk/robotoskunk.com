@@ -1,0 +1,33 @@
+<div class="comms-page">
+	<div class="body" style="text-align: center">
+		<h1>My Order List</h1>
+
+		<%_ if (locals.commissions.length > 0) { -%>
+			<p>Here you can find all your requested commissions.
+
+			<div class="list">
+				<%_ for (const commission of locals.commissions) { -%>
+					<div>
+						<span><a href="/commissions/order/<%= commission.id %>"><%- commission.label %></a></span>
+						<div>
+							<span>Requested at <script nonce="<%- locals.nonce %>">document.write(new Date(Number('<%- commission.createdAt %>')).toLocaleDateString())</script></span>
+							<%- commission.status %>
+						</div>
+					</div>
+				<%_ } -%>
+			</div>
+		<%_ } else { -%>
+			<p>You haven't requested any commissions yet. Maybe you should <a href="/commissions">check out the available commissions</a>?
+		<%_ } -%>
+	</div>
+
+	<p>
+	<% if (locals.page != 0) { %>
+		<a class="btn-2 black" href="/commissions/order-list?page=<%= locals.page - 1 %>">&lt;&lt;&lt; Previous Page</a>
+	<% } %>
+	<% if (locals.page < locals.maxPage - 1) { %>
+		<a class="btn-2 black" href="/commissions/order-list?page=<%= locals.page + 1 %>">Next Page &gt;&gt;&gt;</a>
+	<% } %>
+
+	<p><a class="btn-2 black" href="/commissions">Back to Commissions</a>
+</div>

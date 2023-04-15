@@ -1,0 +1,62 @@
+.dm-generic {
+	background-color: rgba(0, 0, 0, 0.8);
+	padding: 10px;
+	margin: 25px 0;
+}
+.generic-social {
+	display: flex;
+	flex: 2;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	max-width: 850px;
+	margin: 0 auto;
+}
+.generic-social a svg {
+	margin-right: 10px;
+	max-height: 50px;
+}
+.generic-social a:any-link {
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+
+	height: 45px;
+
+	background-color: black;
+	color: white;
+	fill: white;
+	padding: 10px 15px;
+	border: 3px solid white;
+	border-radius: 15px;
+
+	font-size: 20px;
+
+	transition: all 0.2s ease-in-out;
+}
+.generic-social a:any-link:hover, .generic-social a:any-link:focus {
+	background-color: white;
+	color: black;
+	fill: black;
+	text-decoration: none;
+}
+
+/* Simple */
+.generic-social a.fb:any-link:hover, .generic-social a.fb:any-link:focus { color: var(--facebook-brand); fill: var(--facebook-brand); }
+.generic-social a.ds:any-link:hover, .generic-social a.ds:any-link:focus { color: var(--discord-brand); fill: var(--discord-brand); }
+.generic-social a.tw:any-link:hover, .generic-social a.tw:any-link:focus { color: var(--twitter-brand); fill: var(--twitter-brand); }
+.generic-social a.yt:any-link:hover, .generic-social a.yt:any-link:focus { color: var(--youtube-brand); fill: var(--youtube-brand); }
+.generic-social a.pt:any-link:hover, .generic-social a.pt:any-link:focus { color: var(--picarto-brand); fill: var(--picarto-brand); }
+.generic-social a.da:any-link:hover, .generic-social a.da:any-link:focus { color: var(--deviantart-brand); fill: var(--deviantart-brand); }
+.generic-social a.th:any-link:hover, .generic-social a.th:any-link:focus { color: var(--twitch-brand); fill: var(--twitch-brand); }
+.generic-social a.rd:any-link:hover, .generic-social a.rd:any-link:focus { color: var(--reddit-brand); fill: var(--reddit-brand); }
+
+/* Complex */
+.generic-social a.gj:any-link:hover, .generic-social a.gj:any-link:focus { color: var(--gamejolt-brand-2); }
+.generic-social a.gj:any-link path { transition: fill 0.2s ease-in-out; }
+.generic-social a.gj:any-link .c1 { fill: #596175; }
+.generic-social a.gj:any-link .c2 { fill: #bfc7db; }
+.generic-social a.gj:any-link:hover .c1, .generic-social a.gj:any-link:focus .c1 { fill: var(--gamejolt-brand-1); }
+.generic-social a.gj:any-link:hover .c2, .generic-social a.gj:any-link:focus .c2 { fill: var(--gamejolt-brand-2); }

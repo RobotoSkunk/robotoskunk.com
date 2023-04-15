@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<meta charset="utf-8">
+
+<noscript><meta http-equiv="refresh" content="0; url=/error/noscript"></noscript>
+<title><%= locals.html.meta.title %></title>
+
+<!-- START OF META -->
+
+<!-- Meta section -->
+<meta name="siteName" content="<%= locals.html.meta.title %>">
+<meta name="author" content="Alexis Lima">
+<meta name="copyright" content="<%= new Date().getFullYear() %> RobotoSkunk">
+<meta name="application-name" content="RobotoSkunk">
+<meta name="description" content="<%= locals.html.meta.description %>">
+<meta name="keywords" content="RobotoSkunk, Roboto, Skunk, PixelMan, Adventures, PixelMan Adventures, E-GG">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="<%= locals.html.meta.robots %>">
+
+<!-- Twitter meta section -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:domain" content="robotoskunk.com">
+<meta name="twitter:title" content="<%= locals.html.meta.title %>" >
+<meta name="twitter:description" content="<%= locals.html.meta.description %>" >
+<meta name="twitter:image" content="<%= locals.html.meta.img %>" >
+<meta name="twitter:site" content="@RealRobotoSkunk">
+<meta name="twitter:creator" content="@RobotoSkunk">
+
+<!-- Discord meta section -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RobotoSkunk">
+<meta property="og:title" content="<%= locals.html.meta.title %>">
+<meta property="og:description" content="<%= locals.html.meta.description %>">
+<meta property="og:image" content="<%= locals.html.meta.img %>">
+<meta property="og:url" content="<%= locals.server.url %>">
+<meta name="theme-color" content="#ffffff">
+
+<!-- END OF META -->
+
+<link rel="preload" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>" as="style">
+<link rel="preload" href="/resources/css/stylesheet-api.css?v=<%= locals.conf.version %>" as="style">
+<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>" as="style">
+
+
+<script async src="/resources/js/browser-compability.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
+<link rel="stylesheet" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>">
+
+<link rel="icon" href="/favicon.ico?v=<%= locals.conf.version %>">
+<link rel="stylesheet" href="/resources/css/stylesheet-api.css?v=<%= locals.conf.version %>">
+<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>">
+<link rel="canonical" href="<%= locals.server.onlyUrl %>">
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/velocity/2.0.6/velocity.min.js" nonce="<%= locals.server.nonce %>" crossorigin="anonymous"></script>
+<script defer src="/resources/js/utils.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
+<script defer src="/resources/js/api-form.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
+
+
+<% if (locals.html.head) { %> <%- locals.html.head %> <% }%>
+
+<% if (locals.form) { %>
+	<% if (locals.form.bg) { %><%- locals.form.bg %><% } %> 
+<% } %>
+
+<div class="center">
+	<div id="api-form">
+		<form style="left: 100%; opacity: 0;" method="POST">
+			<% if (locals.html.body) { %><%- locals.html.body %><% } %>
+		</form>
+	</div>
+	<div class="footer">
+		<a href="https://robotoskunk.com/terms">Terms</a>
+		<a href="https://robotoskunk.com/privacy">Privacy</a>
+	</div>
+</div>

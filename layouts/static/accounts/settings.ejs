@@ -1,0 +1,69 @@
+<input type="hidden" id="_csrf" value="<%= csrf %>">
+<div class="settings-container">
+	<section class="side-panel">
+		<button>Profile</button>
+		<button>Sessions</button>
+		<button>Security</button>
+		<button>Information</button>
+		<button>Delete Account</button>
+	</section>
+	<section class="main-panel">
+		<div class="panel">
+			<h2>Profile</h2>
+			<form data-type="profile" method="POST">
+				<p><label for="username">Username</label><br>
+				<input id="username" type="text" name="username" placeholder="Username" value="<%= user.name %>" required>
+
+				<p><label for="handler">Handler</label><br>
+				<input type="text" name="handler" placeholder="Handler" id="handler" value="<%= user.handler %>" required><br>
+				<span id="handler-tooltip" class="small-tooltip">@<%= user.handler %></span>
+
+
+				<p><label for="bio">Biography</label><br>
+				<textarea id="bio" name="bio" placeholder="Write something funny here!" style="resize: vertical"><%- user.bio ?? '' %></textarea>
+
+				<p><button class="btn-2">Save</button>
+			</form>
+		</div>
+		<div class="panel">
+			<h2>Sessions</h2>
+			<p class="small">These are the devices you have logged in from. If you don't recognize a device, you should change your password and close the session.</p>
+			<%_ for (const session of sessions) { -%>
+				<div class="session">
+					<img src="/resources/svg/device/<%= session.device %>.svg" alt="Device preview">
+					<div class="device-info">
+						<div class="device-name"><span><%= session.userAgent.platform %> • <%= session.userAgent.browser %></span> <% if (session.isCurrent) { %><div class="badge" style="margin: 0"><div class="dot"></div>Current</div><% } %></div>
+						<div class="row footer">
+							<div>
+								<span class="date" style="margin: 0">Created <script nonce="<%- nonce %>">document.write(new Date(parseInt('<%= session.createdAt.getTime() %>')).toLocaleString());</script></span>
+								<%_ if (session.isCurrent) { %><span class="date">Used <%= session.usedAgo %></span> -%><% } -%>
+							</div>
+							<%_ if (!session.isCurrent) { -%>
+								<div>
+									<a role="button" href="javascript:void(0)" data-id="<%= session.id %>" data-type="session-revoke">Revoke</a>
+								</div>
+							<%_ } -%>
+						</div>
+					</div>
+				</div>
+			<%_ } -%>
+		</div>
+		<div class="panel">
+			<h2>Security</h2>
+			<div id="security-section"></div>
+		</div>
+		<div class="panel">
+			<h2>Information</h2>
+			<span><b>Account ID</b> <%- user.id %></span><br>
+			<span><b>Account created on</b> <script nonce="<%- nonce %>">document.write(new Date(parseInt('<%= user.createdAt.getTime() %>')).toLocaleDateString())</script></span><br>
+			<span><b>Birthdate</b> <script nonce="<%- nonce %>">document.write(new Date(parseInt('<%= user.birthdate.getTime() %>')).toLocaleDateString())</script></span>
+		</div>
+		<div class="panel">
+			<h2>Delete your account</h2>
+			<p>Deleting your account is permanent and cannot be undone. All your data will be deleted and you will not be able to recover it.
+			<p>If you really want to delete your account, click the button below. Your account will be deleted in 7 days and you can cancel the deletion before that.
+
+			<br><br><a href="/accounts/delete" class="btn-2 danger">Delete account</a>
+		</div>
+	</section>
+</div>

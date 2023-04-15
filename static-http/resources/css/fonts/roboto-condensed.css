@@ -1,0 +1,13 @@
+@font-face {
+	font-family: 'Roboto Condensed';
+	src: local('Roboto Condensed'),
+		local('RobotoCondensed Regular'),
+		local('RobotoCondensed-Regular'),
+		url('./ttf/RobotoCondensed-Regular.woff2') format('woff2'),
+		url('./ttf/RobotoCondensed-Regular.woff') format('woff'),
+		url('./ttf/RobotoCondensed-Regular.ttf') format('truetype');
+	font-style: normal;
+	font-display: swap;
+	font-weight: 400;
+}
+

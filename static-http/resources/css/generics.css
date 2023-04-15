@@ -1,0 +1,95 @@
+:root {
+	--selector-color: #1d1d1d;
+	--selector-bg-color: #dced45;
+	--footer-height: 40px;
+	--footer-height-mobile: 120px;
+	--footer-selector-color: #202020;
+	--footer-selector-bg-color: #bebebe;
+	--footer-color: #767676;
+	--header-height: 50px;
+	--header-btn-minsize: 50px;
+	--header-btn-maxsize: 200px;
+	--header-dropdown-max: 250px;
+
+	--white-20: #cccccc;
+	--white-47: #777777;
+	--menu-color: rgba(20, 20, 20, 0.6);
+
+	--rs-email-color: #8fc23d;
+
+	--patreon-brand: #f9685f;
+	--facebook-brand: #1877f2;
+	--discord-brand: #5865F2;
+	--twitter-brand: #1da1f2;
+	--github-brand: black;
+	--youtube-brand: red;
+	--instagram-brand: black;
+	--picarto-brand: #18a153;
+	--deviantart-brand: #46ac33;
+	--reddit-brand: #ff4500;
+	--twitch-brand: #6441a5;
+	--gamejolt-brand-1: #ccff00;
+	--gamejolt-brand-2: #2f7f6f;
+	--telegram-brand: #229ed9;
+
+	--discord-brand-old: #7289da;
+}
+
+html { scroll-behavior: smooth; }
+body {
+	font-family: 'Roboto' !important;
+	font-size: 18px;
+}
+
+
+a:link {
+	color: #4d799d;
+	text-decoration: none;
+}
+a:link:hover {
+	color: #5a73af;
+	text-decoration: underline;
+}
+a:visited {
+	color: #965cbf;
+}
+a:visited:hover {
+	color: #a55aaa;
+	text-decoration: underline;
+}
+a:link:active, a:visited:active {
+	color: #d93630;
+	text-decoration: underline;
+}
+img, input[type='image'], video {
+	aspect-ratio: auto attr(width) / attr(height);
+}
+q {
+	font-style: italic;
+}
+
+
+
+*::moz-selection {
+	color: var(--selector-color);
+	background-color: var(--selector-bg-color);
+}
+*::selection {
+	color: var(--selector-color);
+	background-color: var(--selector-bg-color);
+}
+*::-webkit-scrollbar {
+	width: 10px;
+	background-color: #0f0f0f;
+}
+*::-webkit-scrollbar-thumb {
+	background-color: #505050;
+	border: 0px;
+	border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: #606060; }
+*::-webkit-scrollbar-corner, *::-webkit-resizer {
+	background-color: transparent;
+	border: 0px;
+}
+

@@ -1,0 +1,80 @@
+/*#region Patreon*/
+.patreon-btn {
+	border: 2px solid var(--patreon-brand);
+	border-radius: 5px;
+	background-color: black;
+	color: var(--patreon-brand);
+	font-size: 20px;
+	font-weight: thin;
+	
+	display: inline-block;
+	position: relative;
+	width: 80%;
+	max-width: 300px;
+	height: 50px;
+
+	transition: all 0.2s ease;
+}
+.patreon-btn span {
+	position: absolute;
+	left: 65px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--patreon-brand);
+
+	transition: color 0.2s ease;
+}
+.patreon-btn svg {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.patreon-btn:any-link {
+	text-decoration: none;
+}
+.patreon-btn:hover span, .patreon-btn:focus span {
+	color: white;
+}
+.patreon-btn:hover, .patreon-btn:focus {
+	background-color: var(--patreon-brand);
+}
+/*#endregion*/
+/*#region PayPal*/
+.paypal-donation-btn {
+	border: 0px;
+	border-radius: 50px;
+	background-color: #0070ba;
+	color: white;
+	font-size: 16px;
+	font-family: 'PayPal';
+
+	position: relative;
+
+	display: inline-block;
+	padding: 12px 24px 12px 24px;
+
+	transition: all 0.2s ease;
+}
+.paypal-donation-btn img {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+}
+.paypal-donation-btn svg {
+	margin: auto;
+	position: relative;
+	top: 3px;
+}
+.paypal-donation-btn span {
+	margin-left: 9px;
+	color: white;
+	text-decoration: none;
+	position: relative;
+	top: -3px;
+}
+.paypal-donation-btn:any-link, .paypal-donation-btn:hover:any-link, .paypal-donation-btn:focus:any-link { text-decoration: none; }
+.paypal-donation-btn:hover, .paypal-donation-btn:focus { background-color: #003087; }
+/*#endregion*/

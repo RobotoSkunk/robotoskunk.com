@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- COPYRIGHT RobotoSkunk 2022 -->
+
+<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" viewBox="0 0 83.36 83.36">
+	<circle fill="white" cx="41.68" cy="41.68" r="41.68"/>
+	<rect x="15.63" y="24.04" width="51.96" height="31.03" rx="3.69" ry="3.69"/>
+	<rect fill="white" x="19.88" y="27.92" width="43.46" height="21.27"/>
+	<rect x="39.97" y="53.21" width="3.28" height="7.42"/>
+	<rect x="29.83" y="59.3" width="23.55" height="3.21" rx="2" ry="5"/>
+</svg>

@@ -1,0 +1,21 @@
+# robots.txt for RobotoSkunk
+
+# Alex Skunk: Well you're here too... stop harassing me
+
+User-agent: *
+Allow: /
+
+Disallow: /errors/noscript
+Disallow: /accounts/logout
+Disallow: /accounts/delete
+Disallow: /accounts/settings
+Disallow: /accounts/banned
+Disallow: /accounts/verify-email
+Disallow: /accounts/reset-password
+Disallow: /commissions/order
+Disallow: /commissions/form
+Disallow: /errors/
+Disallow: /pixelman/api/
+Disallow: /phpmyadmin/
+
+Sitemap: https://robotoskunk.com/sitemap.xml

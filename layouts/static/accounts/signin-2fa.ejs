@@ -1,0 +1,18 @@
+<input type="hidden" name="csrf" value="<%= csrf %>">
+
+<div class="section" data-height="280">
+	<h1>Two-factor authentication</h1>
+	<div style="width: 80%;">
+		<p>Enter your two-factor authentication code using your 2fa app, or the recovery code you were given.</p>
+	</div>
+	<input type="text" name="twofa" placeholder="2FA code" required>
+	<span class="error"></span>
+
+	<button class="submit">Continue</button>
+</div>
+<div class="section" data-height="150">
+	<h1>Sign In Successful</h1>
+	<div style="width: 80%;">
+		<p>You have successfully signed in. You will be redirected to the home page shortly.</p>
+	</div>
+</div>

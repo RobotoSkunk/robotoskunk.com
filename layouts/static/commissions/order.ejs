@@ -1,0 +1,127 @@
+
+
+<% if (locals.curl && !locals.paid) { %>
+	<script src="https://www.paypal.com/sdk/js?client-id=<%= locals.paypal %>" nonce="<%= locals.nonce %>"></script>
+<% } %>
+
+
+<div class="container">
+	<div class="col">
+		<h1 style="margin-bottom: 5px"><%- locals.title %></h1>
+		<div class="comm-id">
+			<button id="copy"><img src="/resources/svg/copy.svg" width="16" height="20" alt="Copy ID"></button>
+			<span id="copy-id"><%- locals.id %></span>
+			<div id="copy-notice" class="copied">Copied!</div>
+		</div>
+		<p><b>Canvas</b>: <%- locals.canvas %>
+		<p><b>Deadline</b>: <%- locals.deadline %>
+		<p><b>Status</b> <%- locals.status %>
+		<%_ if (locals.email) { -%>
+			<p><b>Email</b>: <%- locals.email %>
+		<%_ } -%>
+		<%_ if (locals.cancelReason) { -%>
+			<p style="color: #d3273e"><b>Cancel reason</b>: <%- locals.cancelReason %>
+		<%_ } -%>
+		<p><b>Description</b>
+		<p class="user-text" id="description"><%= locals.description %></p>
+	</div>
+	<div class="col">
+		<h2>Invoice</h2>
+		<%_ for (const group of locals.invoice) { -%>
+			<table>
+				<%_ for (const item of group) { -%>
+					<tr><td><%- item.label %> <td><%- item.value %></tr>
+				<%_ } -%>
+			</table>
+		<%_ } -%>
+		<table style="width: 95%">
+			<%_ if (parseFloat(locals.discount)) { -%>
+				<tr><td><b>Discount</b> <td><%- parseFloat(locals.discount) * 100 %>%</tr>
+			<%_ } -%>
+			<tr><td><b>Total</b> <td>$<%- locals.price %> USD</tr>
+		</table>
+	</div>
+</div>
+
+
+<p>You can talk with RobotoSkunk using the following social networks
+<div class="dm-buttons">
+	<a href="https://twitter.com/messages/compose?recipient_id=1010294782147432448&text=Hi%21%20I%20orderer%20a%20commission." class="dm-button tw" target="_blank" title="Message to @RobotoSkunk on Twitter">
+		<svg width="30px" viewBox="0 0 326.85 265.58">
+			<path d="M102.79,265.58c123.34,0,190.8-102.18,190.8-190.8,0-2.9,0-5.79-.2-8.67A136.16,136.16,0,0,0,326.85,31.4,133.9,133.9,0,0,1,288.33,42,67.31,67.31,0,0,0,317.82,4.86a134.47,134.47,0,0,1-42.59,16.28A67.12,67.12,0,0,0,161,82.3,190.36,190.36,0,0,1,22.75,12.23a67.11,67.11,0,0,0,20.76,89.52,66.5,66.5,0,0,1-30.44-8.39v.85a67.08,67.08,0,0,0,53.8,65.73,66.93,66.93,0,0,1-30.28,1.16,67.15,67.15,0,0,0,62.65,46.57A134.54,134.54,0,0,1,16,236.43a137.42,137.42,0,0,1-16-1,189.85,189.85,0,0,0,102.79,30.07"/>
+		</svg><b>Twitter</b>
+	</a>
+
+	<a href="https://m.me/RobotoSkunk" class="dm-button fb" target="_blank" title="Message to RobotoSkunk on Messenger">
+		<svg width="30px" viewBox="0 0 850 850">
+			<path d="M400,0C174.67,0,0,165.06,0,388,0,504.62,47.79,605.38,125.62,675a31.92,31.92,0,0,1,10.75,22.8L138.55,769a32,32,0,0,0,44.9,28.29l79.4-35a31.92,31.92,0,0,1,21.36-1.56A436.36,436.36,0,0,0,400,776c225.33,0,400-165,400-388S625.33,0,400,0ZM640.2,298.53,522.7,485a60,60,0,0,1-86.76,16l-93.45-70.1a24,24,0,0,0-28.91.09L187.36,526.74c-16.84,12.78-38.83-7.38-27.56-25.27L277.3,315.05a60,60,0,0,1,86.76-16l93.45,70.09a24,24,0,0,0,28.91-.09l126.22-95.78C629.48,260.48,651.47,280.64,640.2,298.53Z"/><path class="cls-2" d="M400,0C174.67,0,0,165.06,0,388,0,504.62,47.79,605.38,125.62,675a31.92,31.92,0,0,1,10.75,22.8L138.55,769a32,32,0,0,0,44.9,28.29l79.4-35a31.92,31.92,0,0,1,21.36-1.56A436.36,436.36,0,0,0,400,776c225.33,0,400-165,400-388S625.33,0,400,0ZM640.2,298.53,522.7,485a60,60,0,0,1-86.76,16l-93.45-70.1a24,24,0,0,0-28.91.09L187.36,526.74c-16.84,12.78-38.83-7.38-27.56-25.27L277.3,315.05a60,60,0,0,1,86.76-16l93.45,70.09a24,24,0,0,0,28.91-.09l126.22-95.78C629.48,260.48,651.47,280.64,640.2,298.53Z"/>
+		</svg><b>Messenger</b>
+	</a>
+	
+	<a href="https://t.me/RobotoSkunk" class="dm-button tl" target="_blank" title="Message to RobotoSkunk on Telegram">
+		<svg width="30px" viewBox="0 0 512 512">
+			<path  d="M256,0C114.62,0,0,114.62,0,256S114.62,512,256,512,512,397.38,512,256,397.38,0,256,0ZM374.66,174.1c-3.85,40.48-20.52,138.71-29,184-3.59,19.19-10.66,25.62-17.5,26.25-14.86,1.37-26.15-9.83-40.55-19.27-22.53-14.77-35.26-24-57.13-38.37C205.2,310.1,221.59,301,236,286c3.77-3.92,69.27-63.5,70.54-68.9.16-.68.31-3.2-1.19-4.53s-3.71-.87-5.3-.51q-3.39.76-108,71.37Q176.73,294,164.29,293.68c-9.14-.2-26.72-5.17-39.79-9.42-16-5.21-28.77-8-27.66-16.82q.85-6.92,19-14.14Q227.83,204.52,265.17,189c71.1-29.57,85.87-34.71,95.5-34.88,2.12,0,6.85.49,9.92,3a10.77,10.77,0,0,1,3.64,6.93A45.08,45.08,0,0,1,374.66,174.1Z"/>
+		</svg><b>Telegram</b>
+	</a>
+
+	<a href="mailto:contact@robotoskunk.com?subject=Commission&body=Hi%21%20I%20orderer%20a%20commission." class="dm-button ml" target="_blank" title="Email to contact@robotoskunk.com">
+		<svg width="30px" viewBox="0 0 150 100">
+			<path d="M75,48,148.65,8.83A15,15,0,0,0,135,0H15A15,15,0,0,0,1.35,8.83Z"/>
+			<path d="M75,60.07,0,19V85a15,15,0,0,0,15,15H135a15,15,0,0,0,15-15V19Z"/>
+		</svg><b>Email</b>
+	</a>
+</div>
+<p>If you want to support the creator a little more, you can <a href="https://robotoskunk.com/#paypal-donate-button">go to the donations button.</a>
+<br>
+
+<% if (locals.curl) { %>
+	<div id="paypal">
+		<% if (!locals.paid) { %>
+			<script nonce="<%= locals.nonce %>">
+				paypal.Buttons({
+					style: {
+						color: 'silver',
+						tagline: false
+					},
+					createOrder: (data, actions) => {
+						return actions.order.create({
+							application_context: {
+								brand_name: 'RobotoSkunk'
+							},
+							purchase_units: [{
+								amount: {
+									currency_code: 'USD',
+									value: '<%= locals.price %>'
+								}
+							}]
+						});
+					},
+					onApprove: async (data, actions) => {
+						try {
+							const req = await fetch(location.href, {
+								method: 'POST',
+								body: new URLSearchParams({
+									paypal: data.orderID
+								})
+							});
+							const json = await req.json();
+
+							RSNotifications.create(json.message, json.success ? 'success' : 'error')
+
+							if (json.success) location.reload();
+						} catch (err) {
+							RSNotifications.create('Something went wrong while trying to validate your purchase. Report this bug to RobotoSkunk.', 'error');
+							console.error(err);
+						}
+					}
+				}).render('#paypal');
+			</script>
+		<% } else { %>
+			<h2>Thank you for your purchase!</h2>
+			<img src="<%= locals.preview %>" class="thumbnail" alt="Preview of the commission">
+			<p><a href="<%= locals.curl %>" class="download" role="button" rel="noopener noreferrer" target="_blank">Download Original</a>
+		<% } %>
+	</div>
+<% } %> 
+
+

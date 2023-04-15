@@ -1,0 +1,16 @@
+
+.store-row {
+	margin: 0 auto;
+	text-align: center;
+}
+
+.item {
+	display: inline-block;
+	margin: 10px;
+	text-decoration: none;
+}
+.item > img {
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: 8px;
+}
