@@ -22,6 +22,7 @@ if (!conf_1.default.production) {
 }
 phrases_1.default.push(`<!-- There's a ${(1 / (phrases_1.default.length + 1) * 100).toFixed(2)}% chance to get a phrase! -->`);
 exports.PORT = 8000;
+// Length exception: regex can't be reduced to match 120 characters
 exports.regex = {
     email: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
     username: /^[a-zA-ZÀ-ÿ0-9 \[\]|#()_-]+$/,

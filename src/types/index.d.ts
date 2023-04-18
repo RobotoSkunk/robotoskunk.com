@@ -5,9 +5,12 @@ import { LangCode } from '../libs/lang';
 
 
 // #region Typings
-declare global{
-	namespace RobotoSkunk {
-		interface Locals {
+declare global
+{
+	namespace RobotoSkunk
+	{
+		interface Locals
+		{
 			conf: typeof conf;
 			server: {
 				nonce: string;
@@ -49,7 +52,8 @@ declare global{
 			}
 		}
 	
-		interface RenderOptions {
+		interface RenderOptions
+		{
 			locals?: any | undefined;
 			checkBannedUser?: boolean | undefined;
 			denyIfLoggedIn?: boolean | undefined;
@@ -59,8 +63,10 @@ declare global{
 		}
 	}
 
-	namespace Express {
-		interface Response {
+	namespace Express
+	{
+		interface Response
+		{
 			rs: RobotoSkunk.Locals;
 			renderDefault: (view?: string, options?: RobotoSkunk.RenderOptions) => Promise<void>;
 			minifyOptions: any;

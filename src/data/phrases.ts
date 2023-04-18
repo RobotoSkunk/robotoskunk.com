@@ -1,3 +1,5 @@
+// Length exception: this file contains Base64-encoded data and long urls
+
 export = [
 	`<!--
 "We keep moving forward, opening up new doors and

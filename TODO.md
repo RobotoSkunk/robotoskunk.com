@@ -10,6 +10,7 @@
 - [x] Add a "Forgot Password" page.
 - [ ] Add a way to get a list of user's security activities.
 - [ ] Draw sign in and sign up backgrounds.
+- [ ] Re-code /libs/* and /routes/* to match the new code style.
 
 ## For the future
 - [ ] Improve Social page.

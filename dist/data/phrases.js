@@ -1,4 +1,5 @@
 "use strict";
+// Length exception: this file contains Base64-encoded data and long urls
 module.exports = [
     `<!--
 "We keep moving forward, opening up new doors and

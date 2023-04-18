@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
-export interface Article {
+export interface Article
+{
 	id: string;
 	label: string;
 	description: string;
@@ -35,11 +36,14 @@ export interface Article {
 
 
 
-export interface DBData_template {
+export interface DBData_template
+{
 	version: number;
 }
 
-export interface DBData_v1 extends DBData_template {
+// Compatibility with old commissions system
+export interface DBData_v1 extends DBData_template
+{
 	version: 1;
 	data: {
 		label: string;
@@ -47,7 +51,9 @@ export interface DBData_v1 extends DBData_template {
 	}[];
 }
 
-export interface DBData_v2 extends DBData_template {
+// New commissions system
+export interface DBData_v2 extends DBData_template
+{
 	version: 2;
 	data: {
 		options: {
@@ -65,7 +71,8 @@ export type DBData = DBData_v1 | DBData_v2;
 
 
 
-export interface Commission {
+export interface Commission
+{
 	id: string;
 	author: string;
 	_title: string;
@@ -90,6 +97,8 @@ export interface Commission {
 
 
 
+// I was too lazy to create a new PostgreSQL table for this, so I just used this JSON.
+// Don't worry, I'll code a proper table for this in the future.
 
 export const articles: Article[] = [
 	{
@@ -213,9 +222,18 @@ export const articles: Article[] = [
 	}, {
 		id: 'interactive-wallpaper',
 		label: 'Interactive wallpaper',
-		description: 'Cute custom interactive wallpapers to make your desktop bright!<br><br><b>Minimum system requirement</b><br><pre><code>OS: Windows 7 or above | Linux x64 bits<br>Processor: Intel i3 or equivalent<br>Memory: 1 GB of RAM<br>Graphics: HD Graphics 3000 or above<br>DirectX: Version 10 or above<br>Storage: 25 MB available space</code></pre>',
+		description: 'Cute custom interactive wallpapers to make your desktop bright!<br><br>'
+			+ '<b>Minimum system requirement</b><br><pre><code>'
+				+ 'OS: Windows 7 or above | Linux x64 bits<br>'
+				+ 'Processor: Intel i3 or equivalent<br>'
+				+ 'Memory: 1 GB of RAM<br>'
+				+ 'Graphics: HD Graphics 3000 or above<br>'
+				+ 'DirectX: Version 10 or above<br>'
+				+ 'Storage: 25 MB available space'
+			+ '</code></pre>',
 		img: 'interactive-wallpaper.webp',
-		notes: 'Install [Lively Wallpaper (free)](https:\/\/rocksdanister.github.io\/lively\/) or [Wallpaper Engine (paid)](https:\/\/www.wallpaperengine.io\/) to run your wallpaper.',
+		notes: 'Install [Lively Wallpaper (free)](https:\/\/rocksdanister.github.io\/lively\/) or'
+			+ '[Wallpaper Engine (paid)](https:\/\/www.wallpaperengine.io\/) to run your wallpaper.',
 		price: 26,
 		size: {
 			custom: true,
@@ -358,7 +376,8 @@ export const articles: Article[] = [
 	}, {
 		id: 'digital-stickers',
 		label: 'Digital stickers',
-		description: 'A digital sticker is a small image that can be used as a sticker on social media, or as a profile picture. They are usually simple and colorful.',
+		description: 'A digital sticker is a small image that can be used as a sticker on social media,'
+					+ 'or as a profile picture. They are usually simple and colorful.',
 		img: 'stickers.webp',
 		price: 6,
 		size: {

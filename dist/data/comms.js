@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.articles = void 0;
 const crypto_1 = __importDefault(require("crypto"));
+// I was too lazy to create a new PostgreSQL table for this, so I just used this JSON.
+// Don't worry, I'll code a proper table for this in the future.
 exports.articles = [
     {
         id: 'artwork',
@@ -127,9 +129,18 @@ exports.articles = [
     }, {
         id: 'interactive-wallpaper',
         label: 'Interactive wallpaper',
-        description: 'Cute custom interactive wallpapers to make your desktop bright!<br><br><b>Minimum system requirement</b><br><pre><code>OS: Windows 7 or above | Linux x64 bits<br>Processor: Intel i3 or equivalent<br>Memory: 1 GB of RAM<br>Graphics: HD Graphics 3000 or above<br>DirectX: Version 10 or above<br>Storage: 25 MB available space</code></pre>',
+        description: 'Cute custom interactive wallpapers to make your desktop bright!<br><br>'
+            + '<b>Minimum system requirement</b><br><pre><code>'
+            + 'OS: Windows 7 or above | Linux x64 bits<br>'
+            + 'Processor: Intel i3 or equivalent<br>'
+            + 'Memory: 1 GB of RAM<br>'
+            + 'Graphics: HD Graphics 3000 or above<br>'
+            + 'DirectX: Version 10 or above<br>'
+            + 'Storage: 25 MB available space'
+            + '</code></pre>',
         img: 'interactive-wallpaper.webp',
-        notes: 'Install [Lively Wallpaper (free)](https:\/\/rocksdanister.github.io\/lively\/) or [Wallpaper Engine (paid)](https:\/\/www.wallpaperengine.io\/) to run your wallpaper.',
+        notes: 'Install [Lively Wallpaper (free)](https:\/\/rocksdanister.github.io\/lively\/) or'
+            + '[Wallpaper Engine (paid)](https:\/\/www.wallpaperengine.io\/) to run your wallpaper.',
         price: 26,
         size: {
             custom: true,
@@ -272,7 +283,8 @@ exports.articles = [
     }, {
         id: 'digital-stickers',
         label: 'Digital stickers',
-        description: 'A digital sticker is a small image that can be used as a sticker on social media, or as a profile picture. They are usually simple and colorful.',
+        description: 'A digital sticker is a small image that can be used as a sticker on social media,'
+            + 'or as a profile picture. They are usually simple and colorful.',
         img: 'stickers.webp',
         price: 6,
         size: {

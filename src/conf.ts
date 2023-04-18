@@ -4,12 +4,12 @@ dotenv.config();
 import fs from 'fs';
 import path from 'path';
 
-var pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+var jsonPackage = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
 
 
 const conf = {
 	'production': process.env.NODE_ENV === 'production',
-	'version': pkg.version as string,
+	'version': jsonPackage.version as string,
 	'root': 'https://robotoskunk.com',
 	'domain': 'robotoskunk.com',
 	'database': {
@@ -75,4 +75,4 @@ const conf = {
 
 
 export default conf;
-pkg = undefined;
+jsonPackage = undefined;

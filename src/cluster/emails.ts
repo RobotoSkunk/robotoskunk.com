@@ -10,11 +10,17 @@ import { RSCrypto } from '../libs/RSEngine';
 import { Mailer } from '../libs/mailer';
 
 
-async function sleep() {
+async function sleep()
+{
 	return new Promise(resolve => setTimeout(resolve, 15000));
 }
 
-export const logger = winston.createLogger(genTemplate(path.join(process.cwd(), 'logs/mailer'), 'error.log'));
+export const logger = winston.createLogger(
+	genTemplate(
+		path.join(process.cwd(), 'logs/mailer'),
+		'error.log'
+	)
+);
 
 
 
@@ -28,21 +34,30 @@ interface Email {
 }
 
 
-(async () => {
-	const mailer = new Mailer({
-		host: conf.emails.noreply.host,
-		port: conf.emails.noreply.port,
-		secure: conf.emails.noreply.secure,
-		auth: {
-			user: conf.emails.noreply.auth.user,
-			pass: conf.emails.noreply.auth.pass
-		}
-	}, logger, Mailer.Mode.Production, conf.root, pgConn, conf.keys.MASTER);
+(async () =>
+{
+	const mailer = new Mailer(
+		{
+			host: conf.emails.noreply.host,
+			port: conf.emails.noreply.port,
+			secure: conf.emails.noreply.secure,
+			auth: {
+				user: conf.emails.noreply.auth.user,
+				pass: conf.emails.noreply.auth.pass
+			}
+		},
+		logger,
+		Mailer.Mode.Production,
+		conf.root,
+		pgConn,
+		conf.keys.MASTER
+	);
 
 
 	try {
-		if (await mailer.transporter.verify()) logger.info('Email server is online.');
-		else {
+		if (await mailer.transporter.verify()) {
+			logger.info('Email server is online.');
+		} else {
 			logger.error('Email server does not work.');
 			process.exit(1);
 		}
@@ -55,7 +70,10 @@ interface Email {
 		const conn = await pgConn.connect();
 
 		try {
-			const { rows } = await conn.query('SELECT * FROM mail_queue WHERE attempts < 3 ORDER BY created_at ASC LIMIT 1');
+			const {
+				rows
+			} = await conn.query('SELECT * FROM mail_queue WHERE attempts < 3 ORDER BY created_at ASC LIMIT 1');
+
 			if (rows.length === 0) {
 				await sleep();
 				continue;

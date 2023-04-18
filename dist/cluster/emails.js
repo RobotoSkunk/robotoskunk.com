@@ -38,8 +38,9 @@ exports.logger = winston_1.default.createLogger((0, logger_1.genTemplate)(path_1
         }
     }, exports.logger, mailer_1.Mailer.Mode.Production, conf_1.default.root, conn_1.pgConn, conf_1.default.keys.MASTER);
     try {
-        if (yield mailer.transporter.verify())
+        if (yield mailer.transporter.verify()) {
             exports.logger.info('Email server is online.');
+        }
         else {
             exports.logger.error('Email server does not work.');
             process.exit(1);

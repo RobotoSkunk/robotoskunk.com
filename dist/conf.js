@@ -7,10 +7,10 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-var pkg = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.cwd(), 'package.json'), 'utf8'));
+var jsonPackage = JSON.parse(fs_1.default.readFileSync(path_1.default.join(process.cwd(), 'package.json'), 'utf8'));
 const conf = {
     'production': process.env.NODE_ENV === 'production',
-    'version': pkg.version,
+    'version': jsonPackage.version,
     'root': 'https://robotoskunk.com',
     'domain': 'robotoskunk.com',
     'database': {
@@ -74,5 +74,5 @@ const conf = {
     }
 };
 exports.default = conf;
-pkg = undefined;
+jsonPackage = undefined;
 //# sourceMappingURL=conf.js.map
