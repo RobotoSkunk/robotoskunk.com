@@ -196,17 +196,17 @@ const app = (0, express_1.default)();
             return path_1.default.join(process.cwd(), 'layouts/static', _path);
         };
         res.header('Content-Security-Policy', `default-src 'self' 'unsafe-hashes' 'unsafe-inline' ${!globals_1.conf.production ? 'localhost:*' : ''}`
-            + `www.redbubble.com *.robotoskunk.com robotoskunk.com www.youtube.com *.paypal.com *.facebook.com`
-            + `ko-fi.com *.ko-fi.com cdnjs.cloudflare.com api.pwnedpasswords.com js.hcaptcha.com *.hcaptcha.com`
-            + `translate.googleapis.com;`
+            + ` www.redbubble.com *.robotoskunk.com robotoskunk.com www.youtube.com *.paypal.com *.facebook.com`
+            + ` ko-fi.com *.ko-fi.com cdnjs.cloudflare.com api.pwnedpasswords.com js.hcaptcha.com *.hcaptcha.com`
+            + ` translate.googleapis.com;`
             + `script-src 'strict-dynamic' 'unsafe-inline' https: ${!globals_1.conf.production || isOnion ? 'http:' : ''}`
-            + `'nonce-${nonce}';`
+            + ` 'nonce-${nonce}';`
             + `base-uri 'self';`
             + `object-src 'none';`
             + `img-src 'self' data: *.robotoskunk.com robotoskunk.com *.paypalobjects.com *.paypal.com`
-            + `*.sandbox.paypal.com cdn.discord.com imgur.com giphy.com *.imgur.com *.giphy.com i.ytimg.com`
-            + `ko-fi.com *.ko-fi.com cdn.jsdelivr.net www.gstatic.com www.google.com translate.googleapis.com`
-            + `*.googleusercontent.com drive.google.com;`
+            + ` *.sandbox.paypal.com cdn.discord.com imgur.com giphy.com *.imgur.com *.giphy.com i.ytimg.com`
+            + ` ko-fi.com *.ko-fi.com cdn.jsdelivr.net www.gstatic.com www.google.com translate.googleapis.com`
+            + ` *.googleusercontent.com drive.google.com;`
             + 'report-uri /csp-report;'
             + (isOnion ? '' : 'upgrade-insecure-requests;'));
         res.header('X-UA-Compatible', 'IE=Edge');
