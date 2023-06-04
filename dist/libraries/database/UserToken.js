@@ -1,4 +1,3 @@
-"use strict";
 /*
     robotoskunk.com - The whole main website of RobotoSkunk.
     Copyright (C) 2023 Edgar Alexis Lima <contact@robotoskunk.com>
@@ -16,5 +15,4 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-Object.defineProperty(exports, "__esModule", { value: true });
-//# sourceMappingURL=db-types.js.map
+//# sourceMappingURL=UserToken.js.map
