@@ -38,8 +38,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("source-map-support/register");
 const crypto_1 = __importDefault(require("crypto"));
 const path_1 = __importDefault(require("path"));
-const RSEngine_1 = require("./libs/RSEngine");
-const lang_1 = require("./libs/lang");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const lang_1 = require("./libraries/lang");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const http_errors_1 = __importDefault(require("http-errors"));
 const morgan_1 = __importDefault(require("morgan"));
@@ -48,13 +48,13 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const recursive_routing_1 = __importDefault(require("recursive-routing"));
 const useragent = __importStar(require("express-useragent"));
-const minify_1 = require("./libs/minify");
-const rateLimiter_1 = require("./libs/rateLimiter");
+const minify_1 = require("./libraries/minify");
+const rateLimiter_1 = require("./libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("./globals");
-const db_1 = require("./libs/db");
-const db_utils_1 = require("./libs/db-utils");
+const db_1 = require("./libraries/db");
+const db_utils_1 = require("./libraries/db-utils");
 const __staticFiles = './static-http';
 const app = (0, express_1.default)();
 //// These comments bellow are used by DeepCode to ignore some false positives
@@ -75,7 +75,7 @@ const app = (0, express_1.default)();
     app.set('etag', false);
     app.set('views', './layouts');
     app.set('view engine', 'ejs');
-    app.set('view cache', globals_1.conf.production);
+    app.set('view cache', globals_1.env.production);
     app.set('x-powered-by', false);
     app.set('case sensitive routing', true);
     app.set('trust proxy', true);
@@ -96,7 +96,7 @@ const app = (0, express_1.default)();
         'stream': globals_1.loggerStream,
         'skip': (req, res) => res.statusCode < 500 && res.statusCode !== 429
     }));
-    if (!globals_1.conf.production) {
+    if (!globals_1.env.production) {
         app.use((0, morgan_1.default)('dev', { 'stream': globals_1.loggerStream }));
     }
     app.use(yield (0, minify_1.minify)());
@@ -113,7 +113,7 @@ const app = (0, express_1.default)();
         const root = `${req.protocol}://${req.hostname}`;
         const isOnion = req.hostname.endsWith('.onion');
         res.rs = {
-            'conf': globals_1.conf,
+            'env': globals_1.env,
             'server': {
                 'dateYear': today.getFullYear(),
                 'nonce': nonce,
@@ -152,7 +152,7 @@ const app = (0, express_1.default)();
         };
         res.minifyOptions = res.minifyOptions || {};
         res.isApi = req.path.startsWith('/api/') || req.path.startsWith('/oauth/');
-        res.rs.conf.root = root;
+        res.rs.env.root = root;
         res.renderDefault = (view = 'layout.ejs', options = {}) => __awaiter(void 0, void 0, void 0, function* () {
             options = Object.assign({
                 checkBannedUser: true,
@@ -163,7 +163,7 @@ const app = (0, express_1.default)();
             if (options.useZxcvbn) {
                 const zxcvbn = yield ejs_1.default.renderFile(path_1.default.join(process.cwd(), '/layouts/utils/zxcvbn.ejs'), {
                     nonce: res.rs.server.nonce,
-                    version: res.rs.conf.version
+                    version: res.rs.env.version
                 });
                 res.rs.html.head = `${zxcvbn}\n\n${res.rs.html.head}`;
             }
@@ -195,11 +195,11 @@ const app = (0, express_1.default)();
         res.getEJSPath = (_path) => {
             return path_1.default.join(process.cwd(), 'layouts/static', _path);
         };
-        res.header('Content-Security-Policy', `default-src 'self' 'unsafe-hashes' 'unsafe-inline' ${!globals_1.conf.production ? 'localhost:*' : ''}`
+        res.header('Content-Security-Policy', `default-src 'self' 'unsafe-hashes' 'unsafe-inline' ${!globals_1.env.production ? 'localhost:*' : ''}`
             + ` www.redbubble.com *.robotoskunk.com robotoskunk.com www.youtube.com *.paypal.com *.facebook.com`
             + ` ko-fi.com *.ko-fi.com cdnjs.cloudflare.com api.pwnedpasswords.com js.hcaptcha.com *.hcaptcha.com`
             + ` translate.googleapis.com;`
-            + `script-src 'strict-dynamic' 'unsafe-inline' https: ${!globals_1.conf.production || isOnion ? 'http:' : ''}`
+            + `script-src 'strict-dynamic' 'unsafe-inline' https: ${!globals_1.env.production || isOnion ? 'http:' : ''}`
             + ` 'nonce-${nonce}';`
             + `base-uri 'self';`
             + `object-src 'none';`
@@ -224,7 +224,7 @@ const app = (0, express_1.default)();
     app.use(rateLimiter_1.rateLimiterMiddleware);
     // #region Routing
     app.use(express_1.default.static(__staticFiles, {
-        maxAge: globals_1.conf.production ? '1y' : 0,
+        maxAge: globals_1.env.production ? '1y' : 0,
         dotfiles: 'ignore',
         fallthrough: true,
         etag: true
@@ -275,7 +275,7 @@ const app = (0, express_1.default)();
     app.get('/teapot', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         next((0, http_errors_1.default)(418, "I'm a teapot"));
     }));
-    if (!globals_1.conf.production) {
+    if (!globals_1.env.production) {
         app.get('/error/:number', (req, res, next) => {
             const err = Number.parseInt(req.params.number);
             if (err < 400)
@@ -338,7 +338,7 @@ const app = (0, express_1.default)();
                 'message': 'Something went wrong.',
                 'imgPath': '/resources/svg/alex-skunk/dizzy.svg',
                 'imgAlt': 'Alex Skunk dizzy on the floor',
-                'debug': (globals_1.conf.production ?
+                'debug': (globals_1.env.production ?
                     undefined
                     :
                         (err.message ? err.message.replace(/\\/gm, '\\\\').replace(/\`/gm, '\\`') : undefined)),
@@ -434,7 +434,7 @@ const app = (0, express_1.default)();
             res.rs.html.meta.description = res.rs.error.message;
             if (code >= 500)
                 globals_1.logger.error(`${code} - ${err.message} (${res.rs.server.url})`);
-            else if (!globals_1.conf.production)
+            else if (!globals_1.env.production)
                 globals_1.logger.warn(`${code} - ${err.message} (${res.rs.server.url})`);
             res.status(code);
             yield res.renderDefault('layout-http-error.ejs', {

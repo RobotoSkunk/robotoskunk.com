@@ -17,11 +17,11 @@ const http_errors_1 = __importDefault(require("http-errors"));
 const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.rs.html.head = `<link rel="preload" href="/resources/css/common/branding-buttons.css?v=${res.rs.conf.version}" as="style">
-			<link rel="preload" href="/resources/css/fonts/paypal.css?v=${res.rs.conf.version}" as="style">
+        res.rs.html.head = `<link rel="preload" href="/resources/css/common/branding-buttons.css?v=${res.rs.env.version}" as="style">
+			<link rel="preload" href="/resources/css/fonts/paypal.css?v=${res.rs.env.version}" as="style">
 		
-			<link rel="stylesheet" href="/resources/css/common/branding-buttons.css?v=${res.rs.conf.version}">
-			<link rel="stylesheet" href="/resources/css/fonts/paypal.css?v=${res.rs.conf.version}">
+			<link rel="stylesheet" href="/resources/css/common/branding-buttons.css?v=${res.rs.env.version}">
+			<link rel="stylesheet" href="/resources/css/fonts/paypal.css?v=${res.rs.env.version}">
 			<script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js" nonce="${res.rs.server.nonce}"></script>`;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('index.ejs'), {
             nonce: res.rs.server.nonce

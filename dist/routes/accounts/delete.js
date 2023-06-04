@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const globals_1 = require("../../globals");
-const conf_1 = __importDefault(require("../../conf"));
-const RSEngine_1 = require("../../libs/RSEngine");
+const env_1 = __importDefault(require("../../env"));
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const http_errors_1 = __importDefault(require("http-errors"));
 const express_1 = __importDefault(require("express"));
-const rateLimiter_1 = require("../../libs/rateLimiter");
-const db_1 = require("../../libs/db");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
+const db_1 = require("../../libraries/db");
 const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = yield res.rs.client.token();
@@ -32,19 +32,19 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     };
     res.rs.html.head = `<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 		<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">
-		<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>" as="style">
+		<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.env.version %>" as="style">
 
-		<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>">
-		<script defer src="/resources/js/utils.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-		<script defer src="/resources/js/delete-account.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-		<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+		<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.env.version %>">
+		<script defer src="/resources/js/utils.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+		<script defer src="/resources/js/delete-account.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+		<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
     res.rs.error = {
         'code': 'Delete your account',
         'imgPath': '/resources/svg/alex-skunk/dizzy.svg',
         'imgAlt': 'Alex Skunk dizzy on the floor',
         'message': ''
     };
-    res.rs.error.message = `<input type="hidden" id="h-captcha" data-sitekey="${conf_1.default.hcaptcha_keys.site_key}">`;
+    res.rs.error.message = `<input type="hidden" id="h-captcha" data-sitekey="${env_1.default.hcaptcha_keys.site_key}">`;
     if (!deleteDate) {
         res.rs.error.message += `Are you sure you want to delete your account? This action cannot be undone.
 			<br><br>
@@ -71,7 +71,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             return next((0, http_errors_1.default)(403, 'You are not logged in.'));
         var validRecaptcha = false;
         if (req.body['h-captcha-response'])
-            validRecaptcha = yield RSEngine_1.RSMisc.VerifyCaptcha(req.body['h-captcha-response'], conf_1.default.hcaptcha_keys.secret_key);
+            validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(req.body['h-captcha-response'], env_1.default.hcaptcha_keys.secret_key);
         if (!validRecaptcha)
             return res.status(403).json({ 'message': 'Invalid captcha' });
         if (typeof req.body.password !== 'string')
@@ -79,7 +79,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         const user = yield token.token.GetUser();
         const _res = yield user.Delete(req.body.password, !Boolean(yield user.GetDeleteDate()));
         if (!_res) {
-            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, conf_1.default.keys.RATE_LIMITER);
+            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, env_1.default.keys.RATE_LIMITER);
             try {
                 yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.consume(_limiterKey);
             }

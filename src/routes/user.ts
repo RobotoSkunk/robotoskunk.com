@@ -1,6 +1,6 @@
 import express from 'express';
-import { User } from '../libs/db';
-import { RSCrypto, RSMisc } from '../libs/RSEngine';
+import { User } from '../libraries/db';
+import { RSCrypto, RSUtils } from 'dotcomcore/dist/RSEngine';
 import httpError from 'http-errors';
 
 const router = express.Router();
@@ -29,18 +29,18 @@ router.get('/:handler', async (req, res, next) => {
 	// #endregion
 
 	res.rs.html.meta.setSubtitle(`${user.name} (@${user.handler})`);
-	res.rs.html.head = `<link rel="preload" href="/resources/css/user-profile.css?v=${res.rs.conf.version}" as="style">
-		<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.conf.version}" as="style">
+	res.rs.html.head = `<link rel="preload" href="/resources/css/user-profile.css?v=${res.rs.env.version}" as="style">
+		<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.env.version}" as="style">
 
-		<link rel="stylesheet" href="/resources/css/user-profile.css?v=${res.rs.conf.version}">
-		<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.conf.version}">
+		<link rel="stylesheet" href="/resources/css/user-profile.css?v=${res.rs.env.version}">
+		<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.env.version}">
 
-		<script defer src="/resources/js/user-profile.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+		<script defer src="/resources/js/user-profile.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 	res.rs.html.bodyClass = 'bg-1';
 
 	if (user.bio) {
-		const bio = RSMisc.EscapeHtml(user.bio.replace(/\n/g, ' ').substring(0, 200));
+		const bio = RSUtils.EscapeHtml(user.bio.replace(/\n/g, ' ').substring(0, 200));
 
 		res.rs.html.meta.description = user.bio.length > 200 ? bio + '...' : bio;
 	}
@@ -51,12 +51,12 @@ router.get('/:handler', async (req, res, next) => {
 		<br><br>
 		<div class="profile-container">
 			<div class="panel left">
-				<img src="${user.avatar}" class="avatar" alt="${RSMisc.EscapeHtml(user.name)}'s avatar" width="260" height="260"><br>
+				<img src="${user.avatar}" class="avatar" alt="${RSUtils.EscapeHtml(user.name)}'s avatar" width="260" height="260"><br>
 				<div class="profile-info">
 					<div class="txt-ellipsis">
-						<span style="font-size: 25px">${RSMisc.EscapeHtml(user.name)}</span><br>
+						<span style="font-size: 25px">${RSUtils.EscapeHtml(user.name)}</span><br>
 					</div>
-					<span style="font-size: 15px; color: #999">@${RSMisc.EscapeHtml(user.handler)}</span><br>
+					<span style="font-size: 15px; color: #999">@${RSUtils.EscapeHtml(user.handler)}</span><br>
 					<div style="margin-top: 15px; font-size: 14px">
 						<span>${[...user.roles.badges()].join('')}</span>
 					</div>
@@ -64,7 +64,7 @@ router.get('/:handler', async (req, res, next) => {
 			</div>
 			<div class="panel right">
 				<div class="container">
-					${user.bio ? `<div class="user-text" id="user-bio">Loading...<div style="display: none">${RSMisc.EscapeHtml(user.bio)}</div></div>
+					${user.bio ? `<div class="user-text" id="user-bio">Loading...<div style="display: none">${RSUtils.EscapeHtml(user.bio)}</div></div>
 					<script nonce="${res.rs.server.nonce}" id="src-${scriptId}">
 						document.addEventListener('DOMContentLoaded', () => {
 							var bio = document.querySelector('#user-bio > div').textContent;

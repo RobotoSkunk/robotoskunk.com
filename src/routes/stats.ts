@@ -1,8 +1,8 @@
 import express from 'express';
 import ejs from 'ejs';
 
-import { conf } from '../globals';
-import { pgConn } from '../libs/db';
+import { env } from '../globals';
+import { pgConn } from '../libraries/db';
 
 const router = express.Router();
 import httpError from 'http-errors';
@@ -19,17 +19,17 @@ router.get('/', async (req, res, next) => {
 		res.rs.html.meta.title = 'Stats';
 		res.rs.server.aEnabled = false;
 
-		res.rs.html.head = `<link href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" rel="preload">
+		res.rs.html.head = `<link href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" rel="preload">
 			<link href="/resources/css/lib/svgMap.min.css" rel="preload">
 			<link href="/resources/css/stats.css" rel="preload">
 
-			<link href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" rel="stylesheet">
+			<link href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" rel="stylesheet">
 			<link href="/resources/css/lib/svgMap.min.css" rel="stylesheet">
 			<link href="/resources/css/stats.css" rel="stylesheet">
 
 			<script defer src="/resources/js/lib/svg-pan-zoom.min.js" nonce="${res.rs.server.nonce}"></script>
 			<script defer src="/resources/js/lib/svgMap.min.js" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="/resources/js/stats.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+			<script defer src="/resources/js/stats.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 		res.rs.html.body = await ejs.renderFile(res.getEJSPath('stats.ejs'));
 

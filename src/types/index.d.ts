@@ -1,7 +1,7 @@
 import { Response } from 'express';
-import conf from '../conf';
-import { User, UserToken } from '../libs/db';
-import { LangCode } from '../libs/lang';
+import env from '../env';
+import { User, UserToken } from '../libraries/db';
+import { LangCode } from '../libraries/lang';
 
 
 // #region Typings
@@ -11,7 +11,7 @@ declare global
 	{
 		interface Locals
 		{
-			conf: typeof conf;
+			env: typeof env;
 			server: {
 				nonce: string;
 				dateYear: number;

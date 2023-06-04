@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importDefault(require("express"));
-const RSEngine_1 = require("../libs/RSEngine");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const ejs_1 = __importDefault(require("ejs"));
 const http_errors_1 = __importDefault(require("http-errors"));
 const router = express_1.default.Router();
@@ -20,8 +20,8 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         res.rs.html.meta.setSubtitle('Terms of service');
         res.rs.html.meta.description = "I know it's tempting to skip the terms of service and just use the website, but it's important to read them first.";
-        res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" as="style">
-			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}">`;
+        res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" as="style">
+			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}">`;
         const date = RSEngine_1.RSTime.SetTimezone(new Date(2023, RSEngine_1.RSTime.MONTH_INDEX.JANUARY, 14), -5);
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('terms.ejs'), { lastUpdate: date.getTime(), nonce: res.rs.server.nonce });
         yield res.renderDefault('layout.ejs', {

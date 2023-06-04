@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const ejs_1 = __importDefault(require("ejs"));
 const http_errors_1 = __importDefault(require("http-errors"));
-const rateLimiter_1 = require("../../libs/rateLimiter");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
 const globals_1 = require("../../globals");
-const RSEngine_1 = require("../../libs/RSEngine");
-const db_esentials_1 = require("../../libs/db-esentials");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const db_esentials_1 = require("../../libraries/db-esentials");
 const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -25,10 +25,10 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         if (tokenData)
             return next((0, http_errors_1.default)(403, 'Unauthorized'));
         res.rs.html.meta.setSubtitle('Forgot password');
-        res.rs.html.head = `<script defer src="/resources/js/forgot-password.js?v=${globals_1.conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+        res.rs.html.head = `<script defer src="/resources/js/forgot-password.js?v=${globals_1.env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/forgot-password.ejs'), {
-            key: globals_1.conf.hcaptcha_keys.site_key
+            key: globals_1.env.hcaptcha_keys.site_key
         });
         res.renderDefault('layout-api-form.ejs');
     }
@@ -50,7 +50,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         }
         if (typeof req.body['h-captcha-response'] !== 'string')
             return next((0, http_errors_1.default)(400, 'Bad request'));
-        if (!(yield RSEngine_1.RSMisc.VerifyCaptcha(req.body['h-captcha-response'], globals_1.conf.hcaptcha_keys.secret_key)))
+        if (!(yield RSEngine_1.RSUtils.VerifyCaptcha(req.body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key)))
             return next((0, http_errors_1.default)(400, 'Bad request'));
         if (typeof req.body.email !== 'string')
             return next((0, http_errors_1.default)(400, 'Bad request'));

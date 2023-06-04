@@ -2,10 +2,10 @@ import express from 'express';
 import ejs from 'ejs';
 import httpError from 'http-errors';
 
-import { rateLimiterBruteForce } from '../../libs/rateLimiter';
-import { conf, logger, regex } from '../../globals';
-import { RSMisc } from '../../libs/RSEngine';
-import { Email } from '../../libs/db-esentials';
+import { rateLimiterBruteForce } from '../../libraries/rateLimiter';
+import { env, logger, regex } from '../../globals';
+import { RSUtils } from 'dotcomcore/dist/RSEngine';
+import { Email } from '../../libraries/db-esentials';
 
 
 const router = express.Router();
@@ -16,12 +16,12 @@ router.get('/', async (req, res, next) => {
 		if (tokenData) return next(httpError(403, 'Unauthorized'));
 
 		res.rs.html.meta.setSubtitle('Forgot password');
-		res.rs.html.head = `<script defer src="/resources/js/forgot-password.js?v=${conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+		res.rs.html.head = `<script defer src="/resources/js/forgot-password.js?v=${env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 
 		res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/forgot-password.ejs'), {
-			key: conf.hcaptcha_keys.site_key
+			key: env.hcaptcha_keys.site_key
 		});
 
 		res.renderDefault('layout-api-form.ejs');
@@ -39,7 +39,7 @@ router.post('/', async (req, res, next) => {
 		try { await rateLimiterBruteForce(req, res, next); } catch (e) { return next(httpError(429, 'Too many requests.')) }
 
 		if (typeof req.body['h-captcha-response'] !== 'string') return next(httpError(400, 'Bad request'));
-		if (!await RSMisc.VerifyCaptcha(req.body['h-captcha-response'], conf.hcaptcha_keys.secret_key)) return next(httpError(400, 'Bad request'));
+		if (!await RSUtils.VerifyCaptcha(req.body['h-captcha-response'], env.hcaptcha_keys.secret_key)) return next(httpError(400, 'Bad request'));
 
 		if (typeof req.body.email !== 'string') return next(httpError(400, 'Bad request'));
 		const email = req.body.email.trim().toLowerCase();

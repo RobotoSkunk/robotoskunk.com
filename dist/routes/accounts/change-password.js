@@ -14,11 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const ejs_1 = __importDefault(require("ejs"));
 const http_errors_1 = __importDefault(require("http-errors"));
-const rateLimiter_1 = require("../../libs/rateLimiter");
-const db_1 = require("../../libs/db");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
+const db_1 = require("../../libraries/db");
 const globals_1 = require("../../globals");
 const core_1 = require("@zxcvbn-ts/core");
-const RSEngine_1 = require("../../libs/RSEngine");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,8 +33,8 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                 return next((0, http_errors_1.default)(403, 'Unauthorized'));
         }
         res.rs.html.meta.setSubtitle('Change password');
-        res.rs.html.head = `<script defer src="/resources/js/reset-password.js?v=${globals_1.conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+        res.rs.html.head = `<script defer src="/resources/js/reset-password.js?v=${globals_1.env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
@@ -42,7 +42,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             isLogged: !!tokenData,
             csrf: tokenData ? yield tokenData.token.GenerateCSRF() : '',
             token: req.query.token,
-            key: globals_1.conf.hcaptcha_keys.site_key
+            key: globals_1.env.hcaptcha_keys.site_key
         });
         res.renderDefault('layout-api-form.ejs', { useZxcvbn: true });
     }
@@ -61,7 +61,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
     if (typeof req.body['h-captcha-response'] !== 'string')
         return next((0, http_errors_1.default)(400, 'Bad request'));
-    if (!(yield RSEngine_1.RSMisc.VerifyCaptcha(req.body['h-captcha-response'], globals_1.conf.hcaptcha_keys.secret_key)))
+    if (!(yield RSEngine_1.RSUtils.VerifyCaptcha(req.body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key)))
         return next((0, http_errors_1.default)(400, 'Bad request'));
     try {
         if (typeof req.body.password !== 'string')
@@ -85,7 +85,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             if (!(yield tokenData.token.ValidateCSRF(req.body.csrf)))
                 return next((0, http_errors_1.default)(403, 'Unauthorized'));
             user = yield tokenData.token.GetUser();
-            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.conf.keys.RATE_LIMITER);
+            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.env.keys.RATE_LIMITER);
             try {
                 const r = yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
                 if (r !== null) {

@@ -17,9 +17,9 @@ const ejs_1 = __importDefault(require("ejs"));
 const comms_1 = require("../../data/comms");
 const safe_stable_stringify_1 = __importDefault(require("safe-stable-stringify"));
 const globals_1 = require("../../globals");
-const RSEngine_1 = require("../../libs/RSEngine");
-const db_1 = require("../../libs/db");
-const db_utils_1 = require("../../libs/db-utils");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const db_1 = require("../../libraries/db");
+const db_utils_1 = require("../../libraries/db-utils");
 const router = express_1.default.Router();
 router.get('/:article', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -32,7 +32,7 @@ router.get('/:article', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             res.rs.html.meta = {
                 'title': 'Queue is full!!1 :(',
                 'description': 'The queue is full, please try again later.',
-                'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+                'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
             };
             res.rs.error = {
                 'code': 'Queue is full :(',
@@ -55,7 +55,7 @@ router.get('/:article', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                 res.rs.html.meta = {
                     'title': `You can't request commissions`,
                     'description': 'You have been banned from requesting commissions. If you think this is a mistake, please contact us.',
-                    'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+                    'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
                 };
                 res.rs.error = {
                     'code': `You can't request commissions`,
@@ -219,9 +219,9 @@ router.post('/:article', (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 maxAge: RSEngine_1.RSTime._YEAR_ / 1000 * 10,
                 httpOnly: true,
                 sameSite: 'lax',
-                secure: globals_1.conf.production && !res.rs.client.isOnion,
+                secure: globals_1.env.production && !res.rs.client.isOnion,
                 path: '/',
-                domain: res.rs.client.isOnion ? undefined : (globals_1.conf.production ? `.${globals_1.conf.domain}` : 'localhost')
+                domain: res.rs.client.isOnion ? undefined : (globals_1.env.production ? `.${globals_1.env.domain}` : 'localhost')
             });
         }
         res.status(200).json({

@@ -21,10 +21,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
 const http_errors_1 = __importDefault(require("http-errors"));
-const db_1 = require("../../libs/db");
-const RSEngine_1 = require("../../libs/RSEngine");
-const rateLimiter_1 = require("../../libs/rateLimiter");
-const db_utils_1 = require("../../libs/db-utils");
+const db_1 = require("../../libraries/db");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
+const db_utils_1 = require("../../libraries/db-utils");
 const router = express_1.default.Router();
 function relativeTime(time, lang = 'en') {
     return {

@@ -2,11 +2,11 @@ import express from 'express';
 import ejs from 'ejs';
 import httpError from 'http-errors';
 
-import { bruteForceLimiters, rateLimiterBruteForce, __setHeader } from '../../libs/rateLimiter';
-import { Email, PasswordToken, User, UserAuditLog } from '../../libs/db';
-import { conf, logger } from '../../globals';
+import { bruteForceLimiters, rateLimiterBruteForce, __setHeader } from '../../libraries/rateLimiter';
+import { Email, PasswordToken, User, UserAuditLog } from '../../libraries/db';
+import { env, logger } from '../../globals';
 import { zxcvbn } from '@zxcvbn-ts/core';
-import { RSCrypto, RSMisc, RSTime } from '../../libs/RSEngine';
+import { RSCrypto, RSUtils, RSTime } from 'dotcomcore/dist/RSEngine';
 import { RateLimiterRes } from 'rate-limiter-flexible';
 
 
@@ -25,8 +25,8 @@ router.get('/', async (req, res, next) => {
 		}
 		
 		res.rs.html.meta.setSubtitle('Change password');
-		res.rs.html.head = `<script defer src="/resources/js/reset-password.js?v=${conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+		res.rs.html.head = `<script defer src="/resources/js/reset-password.js?v=${env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
@@ -36,7 +36,7 @@ router.get('/', async (req, res, next) => {
 			isLogged: !!tokenData,
 			csrf: tokenData ? await tokenData.token.GenerateCSRF() : '',
 			token: req.query.token,
-			key: conf.hcaptcha_keys.site_key
+			key: env.hcaptcha_keys.site_key
 		});
 
 		res.renderDefault('layout-api-form.ejs', { useZxcvbn: true });
@@ -50,7 +50,7 @@ router.post('/', async (req, res, next) => {
 	try { await rateLimiterBruteForce(req, res, next); } catch (e) { return next(httpError(429, 'Too many requests.')) }
 
 	if (typeof req.body['h-captcha-response'] !== 'string') return next(httpError(400, 'Bad request'));
-	if (!await RSMisc.VerifyCaptcha(req.body['h-captcha-response'], conf.hcaptcha_keys.secret_key)) return next(httpError(400, 'Bad request'));
+	if (!await RSUtils.VerifyCaptcha(req.body['h-captcha-response'], env.hcaptcha_keys.secret_key)) return next(httpError(400, 'Bad request'));
 
 
 	try {
@@ -73,7 +73,7 @@ router.post('/', async (req, res, next) => {
 			if (!await tokenData.token.ValidateCSRF(req.body.csrf)) return next(httpError(403, 'Unauthorized'));
 			
 			user = await tokenData.token.GetUser();
-			const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, conf.keys.RATE_LIMITER);
+			const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, env.keys.RATE_LIMITER);
 
 			try {
 				const r = await bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);

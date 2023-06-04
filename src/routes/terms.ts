@@ -1,5 +1,5 @@
 import express from 'express';
-import { RSTime } from '../libs/RSEngine';
+import { RSTime } from 'dotcomcore/dist/RSEngine';
 
 import ejs from 'ejs';
 import path from 'path';
@@ -13,8 +13,8 @@ router.get('/', async (req, res, next) => {
 		res.rs.html.meta.setSubtitle('Terms of service');
 		res.rs.html.meta.description = "I know it's tempting to skip the terms of service and just use the website, but it's important to read them first.";
 	
-		res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" as="style">
-			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}">`;
+		res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" as="style">
+			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}">`;
 	
 		const date = RSTime.SetTimezone(new Date(2023, RSTime.MONTH_INDEX.JANUARY, 14), -5);
 	

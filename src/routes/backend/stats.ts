@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../globals';
 import httpError from 'http-errors';
-import { Analytics } from '../../libs/analytics';
+import { Analytics } from '../../libraries/analytics';
 
 
 const router = express.Router();

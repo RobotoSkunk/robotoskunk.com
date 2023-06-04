@@ -21,11 +21,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
 const http_errors_1 = __importDefault(require("http-errors"));
-const RSEngine_1 = require("../../libs/RSEngine");
-const db_1 = require("../../libs/db");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const db_1 = require("../../libraries/db");
 const express_useragent_1 = __importDefault(require("express-useragent"));
-const rateLimiter_1 = require("../../libs/rateLimiter");
-const db_utils_1 = require("../../libs/db-utils");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
+const db_utils_1 = require("../../libraries/db-utils");
 const ejs_1 = __importDefault(require("ejs"));
 const router = express_1.default.Router();
 function validateRequest(req, res, next) {
@@ -54,7 +54,7 @@ function validateRequestWithAuthorization(req, res, next) {
         if (((yield user.CheckBlacklist()) & db_utils_1.Blacklist.FLAGS.BANNED) === db_utils_1.Blacklist.FLAGS.BANNED)
             return next((0, http_errors_1.default)(403, 'You are banned'));
         if (!(yield tokenData.token.ValidateConfigAuth(authorization))) {
-            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.conf.keys.RATE_LIMITER);
+            const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.env.keys.RATE_LIMITER);
             try {
                 yield rateLimiter_1.bruteForceLimiters.wrongTokenInConfig.consume(_limiterKey);
             }
@@ -91,7 +91,7 @@ function validateRequestWithPassword(req, res, next) {
         const user = yield tokenData.token.GetUser();
         if (((yield user.CheckBlacklist()) & db_utils_1.Blacklist.FLAGS.BANNED) === db_utils_1.Blacklist.FLAGS.BANNED)
             return next((0, http_errors_1.default)(403, 'You are banned'));
-        const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.conf.keys.RATE_LIMITER);
+        const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.env.keys.RATE_LIMITER);
         try {
             const r = yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
             if (r !== null) {
@@ -171,13 +171,13 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             finally { if (e_1) throw e_1.error; }
         }
         res.rs.html.meta.setSubtitle('Settings');
-        res.rs.html.head = `<link rel="preload" href="/resources/css/settings.css?v=${globals_1.conf.version}" as="style">
-			<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.conf.version}" as="style">
+        res.rs.html.head = `<link rel="preload" href="/resources/css/settings.css?v=${globals_1.env.version}" as="style">
+			<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.env.version}" as="style">
 
-			<link rel="stylesheet" href="/resources/css/settings.css?v=${globals_1.conf.version}">
-			<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.conf.version}">
+			<link rel="stylesheet" href="/resources/css/settings.css?v=${globals_1.env.version}">
+			<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.env.version}">
 			
-			<script defer src="/resources/js/settings.js?v=${globals_1.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+			<script defer src="/resources/js/settings.js?v=${globals_1.env.version}" nonce="${res.rs.server.nonce}"></script>`;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/settings.ejs'), {
             csrf: yield tokenData.token.GenerateCSRF(),
             nonce: res.rs.server.nonce,
@@ -201,7 +201,7 @@ router.get('/birthdate', (req, res, next) => __awaiter(void 0, void 0, void 0, f
         if (user.birthdate)
             return res.redirect('/');
         res.rs.html.meta.setSubtitle('We need to top up your account');
-        res.rs.html.head = `<script defer src="/resources/js/birthdate.js?v=${globals_1.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+        res.rs.html.head = `<script defer src="/resources/js/birthdate.js?v=${globals_1.env.version}" nonce="${res.rs.server.nonce}"></script>`;
         const today = new Date();
         const max = new Date();
         const min = new Date();
@@ -351,8 +351,8 @@ router.post('/security', (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 try {
                     const entry = _m;
                     auditLog.push({
-                        'action': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Type, entry.type),
-                        'relevance': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Relevance, entry.relevance),
+                        'action': RSEngine_1.RSUtils.EnumKey(db_1.UserAuditLog.Type, entry.type),
+                        'relevance': RSEngine_1.RSUtils.EnumKey(db_1.UserAuditLog.Relevance, entry.relevance),
                         'createdAt': entry.createdAt.getTime()
                     });
                 }
@@ -473,8 +473,8 @@ router.post('/security/2fa/disable', (req, res, next) => __awaiter(void 0, void 
 // 		for await (const log of UserAuditLog.Fetch(tokenData.token.usrid)) {
 // 			const data = [
 // 				log.createdAt.toISOString(),
-// 				RSMisc.EnumKey(UserAuditLog.Relevance, log.relevance),
-// 				RSMisc.EnumKey(UserAuditLog.Type, log.type),
+// 				RSUtils.EnumKey(UserAuditLog.Relevance, log.relevance),
+// 				RSUtils.EnumKey(UserAuditLog.Type, log.type),
 // 				`"${log.userAgent}"`,
 // 				`"${stringify(log.data).replace(/"/g, '""')}"`
 // 			];

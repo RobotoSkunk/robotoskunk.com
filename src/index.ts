@@ -3,8 +3,8 @@ import 'source-map-support/register';
 import crypto from 'crypto';
 import path from 'path';
 
-import { RSRandom } from './libs/RSEngine';
-import { getCode } from './libs/lang';
+import { RSRandom } from 'dotcomcore/dist/RSEngine';
+import { getCode } from './libraries/lang';
 
 import cookieParser from 'cookie-parser';
 import httpError, { HttpError } from 'http-errors';
@@ -14,14 +14,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import recursiveRouting from 'recursive-routing';
 import * as useragent from 'express-useragent';
-import { minify } from './libs/minify';
-import { rateLimiterMiddleware } from './libs/rateLimiter';
+import { minify } from './libraries/minify';
+import { rateLimiterMiddleware } from './libraries/rateLimiter';
 import ejs from 'ejs';
 
 import express, { Request, Response } from 'express';
-import { conf, PORT, phrases, logger, loggerStream } from './globals';
-import { mailer, pgConn, User, UserToken } from './libs/db';
-import { Blacklist, UserRoles } from './libs/db-utils';
+import { env, PORT, phrases, logger, loggerStream } from './globals';
+import { mailer, pgConn, User, UserToken } from './libraries/db';
+import { Blacklist, UserRoles } from './libraries/db-utils';
 
 
 const __staticFiles = './static-http';
@@ -53,7 +53,7 @@ const app = express();
 	app.set('etag', false);
 	app.set('views', './layouts');
 	app.set('view engine', 'ejs');
-	app.set('view cache', conf.production);
+	app.set('view cache', env.production);
 	app.set('x-powered-by', false);
 	app.set('case sensitive routing', true);
 	app.set('trust proxy', true);
@@ -75,7 +75,7 @@ const app = express();
 		'stream': loggerStream,
 		'skip': (req, res) => res.statusCode < 500 && res.statusCode !== 429
 	}));
-	if (!conf.production) {
+	if (!env.production) {
 		app.use(morgan('dev', { 'stream': loggerStream }));
 	}
 
@@ -100,7 +100,7 @@ const app = express();
 
 
 		res.rs = {
-			'conf': conf,
+			'env': env,
 			'server': {
 				'dateYear': today.getFullYear(),
 				'nonce': nonce,
@@ -141,7 +141,7 @@ const app = express();
 		};
 		res.minifyOptions = res.minifyOptions || {};
 		res.isApi = req.path.startsWith('/api/') || req.path.startsWith('/oauth/');
-		res.rs.conf.root = root;
+		res.rs.env.root = root;
 
 
 
@@ -159,7 +159,7 @@ const app = express();
 					path.join(process.cwd(), '/layouts/utils/zxcvbn.ejs'),
 					{
 						nonce: res.rs.server.nonce,
-						version: res.rs.conf.version
+						version: res.rs.env.version
 					}
 				);
 
@@ -204,12 +204,12 @@ const app = express();
 
 
 		res.header('Content-Security-Policy',
-			`default-src 'self' 'unsafe-hashes' 'unsafe-inline' ${!conf.production ? 'localhost:*': ''}`
+			`default-src 'self' 'unsafe-hashes' 'unsafe-inline' ${!env.production ? 'localhost:*': ''}`
 			  	+ ` www.redbubble.com *.robotoskunk.com robotoskunk.com www.youtube.com *.paypal.com *.facebook.com`
 				+ ` ko-fi.com *.ko-fi.com cdnjs.cloudflare.com api.pwnedpasswords.com js.hcaptcha.com *.hcaptcha.com`
 				+ ` translate.googleapis.com;`
 			
-			+ `script-src 'strict-dynamic' 'unsafe-inline' https: ${!conf.production || isOnion ? 'http:' : ''}`
+			+ `script-src 'strict-dynamic' 'unsafe-inline' https: ${!env.production || isOnion ? 'http:' : ''}`
 				+ ` 'nonce-${nonce}';`
 
 			+ `base-uri 'self';`
@@ -243,7 +243,7 @@ const app = express();
 
 	// #region Routing
 	app.use(express.static(__staticFiles, {
-		maxAge: conf.production ? '1y' : 0,
+		maxAge: env.production ? '1y' : 0,
 		dotfiles: 'ignore',
 		fallthrough: true,
 		etag: true
@@ -305,7 +305,7 @@ const app = express();
 	});
 
 
-	if (!conf.production) {
+	if (!env.production) {
 		app.get('/error/:number', (req, res, next) =>
 		{
 			const err = Number.parseInt(req.params.number);
@@ -386,7 +386,7 @@ const app = express();
 			'message': 'Something went wrong.',
 			'imgPath': '/resources/svg/alex-skunk/dizzy.svg',
 			'imgAlt': 'Alex Skunk dizzy on the floor',
-			'debug': (conf.production ?
+			'debug': (env.production ?
 				undefined
 				:
 				(err.message ? err.message.replace(/\\/gm, '\\\\').replace(/\`/gm, '\\`') : undefined)
@@ -497,7 +497,7 @@ const app = express();
 		res.rs.html.meta.description = res.rs.error.message;
 
 		if (code >= 500) logger.error(`${code} - ${err.message} (${res.rs.server.url})`);
-		else if (!conf.production) logger.warn(`${code} - ${err.message} (${res.rs.server.url})`);
+		else if (!env.production) logger.warn(`${code} - ${err.message} (${res.rs.server.url})`);
 
 		res.status(code);
 		await res.renderDefault('layout-http-error.ejs', {

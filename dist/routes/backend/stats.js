@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
 const http_errors_1 = __importDefault(require("http-errors"));
-const analytics_1 = require("../../libs/analytics");
+const analytics_1 = require("../../libraries/analytics");
 const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

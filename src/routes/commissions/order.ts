@@ -3,9 +3,9 @@ import httpErrors from 'http-errors';
 import ejs from 'ejs';
 
 import { Commission } from '../../data/comms';
-import { conf, logger } from '../../globals';
-import { Commissions, pgConn, User } from '../../libs/db';
-import * as PayPal from '../../libs/paypal';
+import { env, logger } from '../../globals';
+import { Commissions, pgConn, User } from '../../libraries/db';
+import * as PayPal from '../../libraries/paypal';
 
 
 const router = express.Router();
@@ -101,7 +101,7 @@ router.get('/:id', async (req, res, next) => {
 
 		res.rs.html.body = await ejs.renderFile(res.getEJSPath('commissions/order.ejs'), {
 			nonce: res.rs.server.nonce,
-			paypal: conf.paypal.id,
+			paypal: env.paypal.id,
 			title: comm._title,
 			canvas: `${comm._size.x} x ${comm._size.y}`,
 			deadline: comm.deadline ? `<script nonce="${res.rs.server.nonce}">document.write(new Date(${comm.deadline.getTime()}).toLocaleDateString());</script>` : '<i>Still negotiating...</i>',

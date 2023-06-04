@@ -1,6 +1,6 @@
 import express from 'express';
 import httpErrors from 'http-errors';
-import { Blacklist } from '../libs/db-utils';
+import { Blacklist } from '../libraries/db-utils';
 
 
 const router = express.Router();

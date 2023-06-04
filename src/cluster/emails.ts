@@ -3,11 +3,11 @@ import winston from 'winston';
 
 import path from 'path';
 
-import conf from "../conf";
-import { pgConn } from "../libs/conn";
-import { genTemplate } from '../libs/logger';
-import { RSCrypto } from '../libs/RSEngine';
-import { Mailer } from '../libs/mailer';
+import env from "../env";
+import { pgConn } from "../libraries/conn";
+import { genTemplate } from '../libraries/logger';
+import { RSCrypto } from 'dotcomcore/dist/RSEngine';
+import { Mailer } from '../libraries/mailer';
 
 
 async function sleep()
@@ -38,19 +38,19 @@ interface Email {
 {
 	const mailer = new Mailer(
 		{
-			host: conf.emails.noreply.host,
-			port: conf.emails.noreply.port,
-			secure: conf.emails.noreply.secure,
+			host: env.emails.noreply.host,
+			port: env.emails.noreply.port,
+			secure: env.emails.noreply.secure,
 			auth: {
-				user: conf.emails.noreply.auth.user,
-				pass: conf.emails.noreply.auth.pass
+				user: env.emails.noreply.auth.user,
+				pass: env.emails.noreply.auth.pass
 			}
 		},
 		logger,
 		Mailer.Mode.Production,
-		conf.root,
+		env.root,
 		pgConn,
-		conf.keys.MASTER
+		env.keys.MASTER
 	);
 
 

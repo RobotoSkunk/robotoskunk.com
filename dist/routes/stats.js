@@ -25,17 +25,17 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             return next((0, http_errors_1.default)(404, 'Not found.'));
         res.rs.html.meta.title = 'Stats';
         res.rs.server.aEnabled = false;
-        res.rs.html.head = `<link href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" rel="preload">
+        res.rs.html.head = `<link href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" rel="preload">
 			<link href="/resources/css/lib/svgMap.min.css" rel="preload">
 			<link href="/resources/css/stats.css" rel="preload">
 
-			<link href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" rel="stylesheet">
+			<link href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" rel="stylesheet">
 			<link href="/resources/css/lib/svgMap.min.css" rel="stylesheet">
 			<link href="/resources/css/stats.css" rel="stylesheet">
 
 			<script defer src="/resources/js/lib/svg-pan-zoom.min.js" nonce="${res.rs.server.nonce}"></script>
 			<script defer src="/resources/js/lib/svgMap.min.js" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="/resources/js/stats.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+			<script defer src="/resources/js/stats.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('stats.ejs'));
         yield res.renderDefault('layout.ejs');
     }

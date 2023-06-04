@@ -1,8 +1,8 @@
 import express from 'express';
 import httpError from 'http-errors';
 import { logger } from '../globals';
-import { Email } from '../libs/db';
-import { rateLimiterBruteForce } from '../libs/rateLimiter';
+import { Email } from '../libraries/db';
+import { rateLimiterBruteForce } from '../libraries/rateLimiter';
 
 const router = express.Router();
 

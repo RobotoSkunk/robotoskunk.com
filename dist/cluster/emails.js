@@ -16,11 +16,11 @@ exports.logger = void 0;
 require("source-map-support/register");
 const winston_1 = __importDefault(require("winston"));
 const path_1 = __importDefault(require("path"));
-const conf_1 = __importDefault(require("../conf"));
-const conn_1 = require("../libs/conn");
-const logger_1 = require("../libs/logger");
-const RSEngine_1 = require("../libs/RSEngine");
-const mailer_1 = require("../libs/mailer");
+const env_1 = __importDefault(require("../env"));
+const conn_1 = require("../libraries/conn");
+const logger_1 = require("../libraries/logger");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const mailer_1 = require("../libraries/mailer");
 function sleep() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => setTimeout(resolve, 15000));
@@ -29,14 +29,14 @@ function sleep() {
 exports.logger = winston_1.default.createLogger((0, logger_1.genTemplate)(path_1.default.join(process.cwd(), 'logs/mailer'), 'error.log'));
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const mailer = new mailer_1.Mailer({
-        host: conf_1.default.emails.noreply.host,
-        port: conf_1.default.emails.noreply.port,
-        secure: conf_1.default.emails.noreply.secure,
+        host: env_1.default.emails.noreply.host,
+        port: env_1.default.emails.noreply.port,
+        secure: env_1.default.emails.noreply.secure,
         auth: {
-            user: conf_1.default.emails.noreply.auth.user,
-            pass: conf_1.default.emails.noreply.auth.pass
+            user: env_1.default.emails.noreply.auth.user,
+            pass: env_1.default.emails.noreply.auth.pass
         }
-    }, exports.logger, mailer_1.Mailer.Mode.Production, conf_1.default.root, conn_1.pgConn, conf_1.default.keys.MASTER);
+    }, exports.logger, mailer_1.Mailer.Mode.Production, env_1.default.root, conn_1.pgConn, env_1.default.keys.MASTER);
     try {
         if (yield mailer.transporter.verify()) {
             exports.logger.info('Email server is online.');

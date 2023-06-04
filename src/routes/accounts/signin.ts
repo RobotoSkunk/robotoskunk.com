@@ -1,10 +1,10 @@
 import express from 'express';
-import { conf, logger, regex } from '../../globals';
-import { RSRandom, RSMisc, RSCrypto, RSTime } from '../../libs/RSEngine';
-import { Email, User, UserAuditLog, UserToken } from '../../libs/db';
+import { env, logger, regex } from '../../globals';
+import { RSRandom, RSUtils, RSCrypto, RSTime } from 'dotcomcore/dist/RSEngine';
+import { Email, User, UserAuditLog, UserToken } from '../../libraries/db';
 import httpError from 'http-errors';
-import { Schema, SignInBody, SignInSchema } from '../../libs/schema';
-import { bruteForceLimiters, rateLimiterBruteForce, __httpError, __setHeader } from '../../libs/rateLimiter';
+import { Schema, SignInBody, SignInSchema } from '../../libraries/schema';
+import { bruteForceLimiters, rateLimiterBruteForce, __httpError, __setHeader } from '../../libraries/rateLimiter';
 import { RateLimiterRes } from 'rate-limiter-flexible';
 import ejs from 'ejs';
 
@@ -33,8 +33,8 @@ router.get('/', async (req, res, next) => {
 		if (!token) {
 			res.rs.html.meta.setSubtitle('Sign In');
 
-			res.rs.html.head = `<script defer src="/resources/js/signin.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-				<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+			res.rs.html.head = `<script defer src="/resources/js/signin.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+				<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 				<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 				<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
@@ -43,11 +43,11 @@ router.get('/', async (req, res, next) => {
 			// 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
 			// };
 
-			res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: conf.hcaptcha_keys.site_key });
+			res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: env.hcaptcha_keys.site_key });
 
 		} else {
 			res.rs.html.meta.setSubtitle('Two-Factor Authentication');
-			res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+			res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 			res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signin-2fa.ejs'), {
 				'csrf': await token.GenerateCSRF(),
@@ -84,7 +84,7 @@ router.post('/', async (req, res, next) => {
 		var validRecaptcha = false;
 
 		if (body['h-captcha-response'])
-			validRecaptcha = await RSMisc.VerifyCaptcha(body['h-captcha-response'], conf.hcaptcha_keys.secret_key);
+			validRecaptcha = await RSUtils.VerifyCaptcha(body['h-captcha-response'], env.hcaptcha_keys.secret_key);
 
 
 		if (!validRecaptcha) {
@@ -110,7 +110,7 @@ router.post('/', async (req, res, next) => {
 		// #endregion
 
 
-		const _limiterKey = RSCrypto.HMAC(`${req.ip}:${body.email}`, conf.keys.RATE_LIMITER);
+		const _limiterKey = RSCrypto.HMAC(`${req.ip}:${body.email}`, env.keys.RATE_LIMITER);
 		try {
 			const r = await bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
 
@@ -227,7 +227,7 @@ router.post('/twofa', async (req, res, next) => {
 	if (!twofactor) return next(httpError(403, 'Forbidden'));
 
 
-	const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, conf.keys.RATE_LIMITER);
+	const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, env.keys.RATE_LIMITER);
 
 	try {
 		const r = await bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);

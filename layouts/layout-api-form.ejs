@@ -37,22 +37,22 @@
 
 <!-- END OF META -->
 
-<link rel="preload" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>" as="style">
-<link rel="preload" href="/resources/css/stylesheet-api.css?v=<%= locals.conf.version %>" as="style">
-<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>" as="style">
+<link rel="preload" href="/resources/css/fonts/roboto.css?v=<%= locals.env.version %>" as="style">
+<link rel="preload" href="/resources/css/stylesheet-api.css?v=<%= locals.env.version %>" as="style">
+<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.env.version %>" as="style">
 
 
-<script async src="/resources/js/browser-compability.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
-<link rel="stylesheet" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>">
+<script async src="/resources/js/browser-compability.js?v=<%= locals.env.version %>" nonce="<%= locals.server.nonce %>"></script>
+<link rel="stylesheet" href="/resources/css/fonts/roboto.css?v=<%= locals.env.version %>">
 
-<link rel="icon" href="/favicon.ico?v=<%= locals.conf.version %>">
-<link rel="stylesheet" href="/resources/css/stylesheet-api.css?v=<%= locals.conf.version %>">
-<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>">
+<link rel="icon" href="/favicon.ico?v=<%= locals.env.version %>">
+<link rel="stylesheet" href="/resources/css/stylesheet-api.css?v=<%= locals.env.version %>">
+<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.env.version %>">
 <link rel="canonical" href="<%= locals.server.onlyUrl %>">
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/velocity/2.0.6/velocity.min.js" nonce="<%= locals.server.nonce %>" crossorigin="anonymous"></script>
-<script defer src="/resources/js/utils.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
-<script defer src="/resources/js/api-form.js?v=<%= locals.conf.version %>" nonce="<%= locals.server.nonce %>"></script>
+<script defer src="/resources/js/utils.js?v=<%= locals.env.version %>" nonce="<%= locals.server.nonce %>"></script>
+<script defer src="/resources/js/api-form.js?v=<%= locals.env.version %>" nonce="<%= locals.server.nonce %>"></script>
 
 
 <% if (locals.html.head) { %> <%- locals.html.head %> <% }%>

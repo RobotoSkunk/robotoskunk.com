@@ -18,7 +18,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     res.rs.html.meta = {
         'title': 'Disabled JavaScript',
         'description': 'This site requires JavaScript to be enabled to function properly.',
-        'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+        'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
     };
     res.rs.error = {
         'code': 'JavaScript is not enabled',

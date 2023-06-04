@@ -13,12 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
-const RSEngine_1 = require("../../libs/RSEngine");
-const db_1 = require("../../libs/db");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const db_1 = require("../../libraries/db");
 const http_errors_1 = __importDefault(require("http-errors"));
-const schema_1 = require("../../libs/schema");
-const zxcvbn_1 = require("../../libs/zxcvbn");
-const rateLimiter_1 = require("../../libs/rateLimiter");
+const schema_1 = require("../../libraries/schema");
+const zxcvbn_1 = require("../../libraries/zxcvbn");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const router = express_1.default.Router();
 var Errors;
@@ -36,8 +36,8 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         res.rs.html.meta.setSubtitle('Sign Up');
         res.rs.html.meta.description = 'Sign up for an account';
-        res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+        res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
@@ -50,7 +50,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         min.setFullYear(today.getFullYear() - 130);
         max.setFullYear(today.getFullYear() - 13);
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signup.ejs'), {
-            key: globals_1.conf.hcaptcha_keys.site_key,
+            key: globals_1.env.hcaptcha_keys.site_key,
             min: min.toISOString().split('T')[0],
             max: max.toISOString().split('T')[0]
         });
@@ -91,7 +91,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         // #region Check captcha
         var validRecaptcha = true;
         if (body['h-captcha-response'])
-            validRecaptcha = yield RSEngine_1.RSMisc.VerifyCaptcha(body['h-captcha-response'], globals_1.conf.hcaptcha_keys.secret_key);
+            validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key);
         if (!validRecaptcha) {
             res.status(403).json({
                 'code': Errors.INVALID_CAPTCHA,

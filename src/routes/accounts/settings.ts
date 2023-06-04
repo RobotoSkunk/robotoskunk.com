@@ -1,13 +1,13 @@
 import express, { NextFunction, Request, Response, query } from 'express';
-import { conf, logger } from '../../globals';
+import { env, logger } from '../../globals';
 import httpError from 'http-errors';
-import { RSMisc, RSRandom, RSTime, RSCrypto } from '../../libs/RSEngine';
-import { pgConn, UserAuditLog, User, Email, UserToken } from '../../libs/db';
+import { RSUtils, RSRandom, RSTime, RSCrypto } from 'dotcomcore/dist/RSEngine';
+import { pgConn, UserAuditLog, User, Email, UserToken } from '../../libraries/db';
 import stringify from 'safe-stable-stringify';
 import ua from 'express-useragent';
-import { bruteForceLimiters, __setHeader } from '../../libs/rateLimiter';
+import { bruteForceLimiters, __setHeader } from '../../libraries/rateLimiter';
 import { RateLimiterRes } from 'rate-limiter-flexible';
-import { Blacklist } from '../../libs/db-utils';
+import { Blacklist } from '../../libraries/db-utils';
 import ejs from 'ejs';
 
 const router = express.Router();
@@ -35,7 +35,7 @@ async function validateRequestWithAuthorization(req: Request, res: Response, nex
 	if ((await user.CheckBlacklist() & Blacklist.FLAGS.BANNED) === Blacklist.FLAGS.BANNED) return next(httpError(403, 'You are banned'));
 
 	if (!await tokenData.token.ValidateConfigAuth(authorization)) {
-		const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, conf.keys.RATE_LIMITER);
+		const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, env.keys.RATE_LIMITER);
 
 		try { await bruteForceLimiters.wrongTokenInConfig.consume(_limiterKey); } catch (e) {
 			var ms: number;
@@ -76,7 +76,7 @@ async function validateRequestWithPassword(req: Request, res: Response, next: Ne
 
 	const user = await tokenData.token.GetUser();
 	if ((await user.CheckBlacklist() & Blacklist.FLAGS.BANNED) === Blacklist.FLAGS.BANNED) return next(httpError(403, 'You are banned'));
-	const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, conf.keys.RATE_LIMITER);
+	const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, env.keys.RATE_LIMITER);
 
 	try {
 		const r = await bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
@@ -158,13 +158,13 @@ router.get('/', async (req, res, next) => {
 		}
 
 		res.rs.html.meta.setSubtitle('Settings');
-		res.rs.html.head = `<link rel="preload" href="/resources/css/settings.css?v=${conf.version}" as="style">
-			<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.conf.version}" as="style">
+		res.rs.html.head = `<link rel="preload" href="/resources/css/settings.css?v=${env.version}" as="style">
+			<link rel="preload" href="/resources/css/common/loader.css?v=${res.rs.env.version}" as="style">
 
-			<link rel="stylesheet" href="/resources/css/settings.css?v=${conf.version}">
-			<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.conf.version}">
+			<link rel="stylesheet" href="/resources/css/settings.css?v=${env.version}">
+			<link rel="stylesheet" href="/resources/css/common/loader.css?v=${res.rs.env.version}">
 			
-			<script defer src="/resources/js/settings.js?v=${conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+			<script defer src="/resources/js/settings.js?v=${env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 		res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/settings.ejs'), {
 			csrf: await tokenData.token.GenerateCSRF(),
@@ -192,7 +192,7 @@ router.get('/birthdate', async (req, res, next) => {
 
 		res.rs.html.meta.setSubtitle('We need to top up your account');
 
-		res.rs.html.head = `<script defer src="/resources/js/birthdate.js?v=${conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+		res.rs.html.head = `<script defer src="/resources/js/birthdate.js?v=${env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 		const today = new Date();
 
@@ -344,8 +344,8 @@ router.post('/security', async (req, res, next) => {
 
 		for await (const entry of UserAuditLog.FetchPage(user.id, 0)) {
 			auditLog.push({
-				'action': RSMisc.EnumKey(UserAuditLog.Type, entry.type),
-				'relevance': RSMisc.EnumKey(UserAuditLog.Relevance, entry.relevance),
+				'action': RSUtils.EnumKey(UserAuditLog.Type, entry.type),
+				'relevance': RSUtils.EnumKey(UserAuditLog.Relevance, entry.relevance),
 				'createdAt': entry.createdAt.getTime()
 			});
 		}
@@ -469,8 +469,8 @@ router.post('/security/2fa/disable', async (req, res, next) => {
 // 		for await (const log of UserAuditLog.Fetch(tokenData.token.usrid)) {
 // 			const data = [
 // 				log.createdAt.toISOString(),
-// 				RSMisc.EnumKey(UserAuditLog.Relevance, log.relevance),
-// 				RSMisc.EnumKey(UserAuditLog.Type, log.type),
+// 				RSUtils.EnumKey(UserAuditLog.Relevance, log.relevance),
+// 				RSUtils.EnumKey(UserAuditLog.Type, log.type),
 // 				`"${log.userAgent}"`,
 // 				`"${stringify(log.data).replace(/"/g, '""')}"`
 // 			];

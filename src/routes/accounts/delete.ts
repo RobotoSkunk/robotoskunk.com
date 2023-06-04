@@ -1,11 +1,11 @@
 import { logger } from '../../globals';
-import conf from '../../conf';
-import { RSCrypto, RSMisc, RSTime } from '../../libs/RSEngine';
+import env from '../../env';
+import { RSCrypto, RSUtils, RSTime } from 'dotcomcore/dist/RSEngine';
 import httpError from 'http-errors';
 import express from 'express';
-import { bruteForceLimiters, __setHeader } from '../../libs/rateLimiter';
+import { bruteForceLimiters, __setHeader } from '../../libraries/rateLimiter';
 import { RateLimiterRes } from 'rate-limiter-flexible';
-import { Email, UserAuditLog } from '../../libs/db';
+import { Email, UserAuditLog } from '../../libraries/db';
 
 const router = express.Router();
 
@@ -23,12 +23,12 @@ router.get('/', async (req, res, next) => {
 
 	res.rs.html.head = `<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 		<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">
-		<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>" as="style">
+		<link rel="preload" href="/resources/css/common/loader.css?v=<%= locals.env.version %>" as="style">
 
-		<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.conf.version %>">
-		<script defer src="/resources/js/utils.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-		<script defer src="/resources/js/delete-account.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-		<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+		<link rel="stylesheet" href="/resources/css/common/loader.css?v=<%= locals.env.version %>">
+		<script defer src="/resources/js/utils.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+		<script defer src="/resources/js/delete-account.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+		<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 	res.rs.error = {
 		'code': 'Delete your account',
@@ -37,7 +37,7 @@ router.get('/', async (req, res, next) => {
 		'message': ''
 	};
 
-	res.rs.error.message = `<input type="hidden" id="h-captcha" data-sitekey="${conf.hcaptcha_keys.site_key}">`;
+	res.rs.error.message = `<input type="hidden" id="h-captcha" data-sitekey="${env.hcaptcha_keys.site_key}">`;
 
 	if (!deleteDate) {
 		res.rs.error.message += `Are you sure you want to delete your account? This action cannot be undone.
@@ -68,7 +68,7 @@ router.post('/', async (req, res, next) => {
 		var validRecaptcha = false;
 	
 		if (req.body['h-captcha-response'])
-			validRecaptcha = await RSMisc.VerifyCaptcha(req.body['h-captcha-response'], conf.hcaptcha_keys.secret_key);
+			validRecaptcha = await RSUtils.VerifyCaptcha(req.body['h-captcha-response'], env.hcaptcha_keys.secret_key);
 	
 		if (!validRecaptcha) return res.status(403).json({ 'message': 'Invalid captcha' });
 		if (typeof req.body.password !== 'string') return next(httpError(400, 'Invalid password'));
@@ -78,7 +78,7 @@ router.post('/', async (req, res, next) => {
 		const _res = await user.Delete(req.body.password, !Boolean(await user.GetDeleteDate()));
 
 		if (!_res)  {
-			const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, conf.keys.RATE_LIMITER);
+			const _limiterKey = RSCrypto.HMAC(`${req.ip}:${user.id}`, env.keys.RATE_LIMITER);
 
 			try { await bruteForceLimiters.failedAttemptsAndIP.consume(_limiterKey); } catch (e) {
 				var ms: number;

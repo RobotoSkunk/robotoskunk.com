@@ -1,5 +1,5 @@
 import express from 'express';
-import conf from '../../conf';
+import env from '../../env';
 
 const router = express.Router();
 
@@ -7,7 +7,7 @@ router.get('/', async (req, res, next) => {
 	res.rs.html.meta = {
 		'title': 'Unsupported Browser',
 		'description': 'Please use a modern browser to view this website.',
-		'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+		'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
 	}
 
 	res.rs.error = {

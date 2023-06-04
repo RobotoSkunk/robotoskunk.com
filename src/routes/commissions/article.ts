@@ -4,10 +4,10 @@ import ejs from 'ejs';
 
 import { articles, DBData } from '../../data/comms';
 import stringify from 'safe-stable-stringify';
-import { conf, logger } from '../../globals';
-import { RSCrypto, RSMath, RSTime } from '../../libs/RSEngine';
-import { Commissions, Config, pgConn } from '../../libs/db';
-import { Blacklist } from '../../libs/db-utils';
+import { env, logger } from '../../globals';
+import { RSCrypto, RSMath, RSTime } from 'dotcomcore/dist/RSEngine';
+import { Commissions, Config, pgConn } from '../../libraries/db';
+import { Blacklist } from '../../libraries/db-utils';
 
 
 const router = express.Router();
@@ -25,7 +25,7 @@ router.get('/:article', async (req, res, next) => {
 			res.rs.html.meta = {
 				'title': 'Queue is full!!1 :(',
 				'description': 'The queue is full, please try again later.',
-				'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+				'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
 			};
 
 			res.rs.error = {
@@ -51,7 +51,7 @@ router.get('/:article', async (req, res, next) => {
 				res.rs.html.meta = {
 					'title': `You can't request commissions`,
 					'description': 'You have been banned from requesting commissions. If you think this is a mistake, please contact us.',
-					'img': `${res.rs.conf.root}/resources/img/meta-icon.webp`
+					'img': `${res.rs.env.root}/resources/img/meta-icon.webp`
 				};
 
 				res.rs.error = {
@@ -239,9 +239,9 @@ router.post('/:article', async (req, res, next) => {
 				maxAge: RSTime._YEAR_ / 1000 * 10,
 				httpOnly: true,
 				sameSite: 'lax',
-				secure: conf.production && !res.rs.client.isOnion,
+				secure: env.production && !res.rs.client.isOnion,
 				path: '/',
-				domain: res.rs.client.isOnion ? undefined : (conf.production ? `.${conf.domain}` : 'localhost')
+				domain: res.rs.client.isOnion ? undefined : (env.production ? `.${env.domain}` : 'localhost')
 			});
 		}
 

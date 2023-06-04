@@ -2,7 +2,7 @@ import express from 'express';
 import httpErrors from 'http-errors';
 import ejs from 'ejs';
 import { articles } from '../../data/comms';
-import { Commissions, Config, pgConn } from '../../libs/db';
+import { Commissions, Config, pgConn } from '../../libraries/db';
 
 
 const router = express.Router();

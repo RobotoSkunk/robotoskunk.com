@@ -1,11 +1,11 @@
 import express from 'express';
-import { conf, logger, regex } from '../../globals';
-import { RSRandom, RSTime, RSMisc } from '../../libs/RSEngine';
-import { Email, pgConn, User } from '../../libs/db';
+import { env, logger, regex } from '../../globals';
+import { RSRandom, RSTime, RSUtils } from 'dotcomcore/dist/RSEngine';
+import { Email, pgConn, User } from '../../libraries/db';
 import httpError from 'http-errors';
-import { Schema, SignUpBody, SignUpSchema } from '../../libs/schema';
-import { zxcvbn } from '../../libs/zxcvbn';
-import { rateLimiterBruteForce } from '../../libs/rateLimiter';
+import { Schema, SignUpBody, SignUpSchema } from '../../libraries/schema';
+import { zxcvbn } from '../../libraries/zxcvbn';
+import { rateLimiterBruteForce } from '../../libraries/rateLimiter';
 import ejs from 'ejs';
 
 const router = express.Router();
@@ -29,8 +29,8 @@ router.get('/', async (req, res, next) => {
 		res.rs.html.meta.setSubtitle('Sign Up');
 		res.rs.html.meta.description = 'Sign up for an account';
 
-		res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+		res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
@@ -48,7 +48,7 @@ router.get('/', async (req, res, next) => {
 
 
 		res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signup.ejs'), {
-			key: conf.hcaptcha_keys.site_key,
+			key: env.hcaptcha_keys.site_key,
 			min: min.toISOString().split('T')[0],
 			max: max.toISOString().split('T')[0]
 		});
@@ -90,7 +90,7 @@ router.post('/', async (req, res, next) => {
 		var validRecaptcha = true;
 
 		if (body['h-captcha-response'])
-			validRecaptcha = await RSMisc.VerifyCaptcha(body['h-captcha-response'], conf.hcaptcha_keys.secret_key);
+			validRecaptcha = await RSUtils.VerifyCaptcha(body['h-captcha-response'], env.hcaptcha_keys.secret_key);
 
 
 		if (!validRecaptcha) {

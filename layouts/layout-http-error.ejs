@@ -16,13 +16,13 @@
 
 <!-- END OF META -->
 
-<link rel="preload" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>" as="style">
-<link rel="preload" href="/resources/css/stylesheet-simple.css?v=<%= locals.conf.version %>" as="style">
+<link rel="preload" href="/resources/css/fonts/roboto.css?v=<%= locals.env.version %>" as="style">
+<link rel="preload" href="/resources/css/stylesheet-simple.css?v=<%= locals.env.version %>" as="style">
 
 
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="/resources/css/fonts/roboto.css?v=<%= locals.conf.version %>">
-<link rel="stylesheet" href="/resources/css/stylesheet-simple.css?v=<%= locals.conf.version %>">
+<link rel="stylesheet" href="/resources/css/fonts/roboto.css?v=<%= locals.env.version %>">
+<link rel="stylesheet" href="/resources/css/stylesheet-simple.css?v=<%= locals.env.version %>">
 
 <% if (locals.html.head) { %> <%- locals.html.head %> <% }%>
 <% if (locals.error.debug) { %>

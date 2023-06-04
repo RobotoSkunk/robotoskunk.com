@@ -1,9 +1,9 @@
 import express from 'express';
 import { logger } from '../globals';
-import { RSMisc } from '../libs/RSEngine';
-import { CSP } from '../libs/schema';
+import { RSUtils } from 'dotcomcore/dist/RSEngine';
+import { CSP } from '../libraries/schema';
 import httpError from 'http-errors';
-import { pgConn } from '../libs/db';
+import { pgConn } from '../libraries/db';
 import stringify from 'safe-stable-stringify';
 
 // file deepcode ignore HTTPSourceWithUncheckedType: Schema.validate() is used
@@ -42,7 +42,7 @@ router.post('/', async (req, res, next) => {
 
 
 		const report = Object.assign({
-			'user-agent': RSMisc.AnonymizeAgent(req.headers['user-agent']),
+			'user-agent': RSUtils.AnonymizeAgent(req.headers['user-agent']),
 		}, req.body);
 
 		const _res = await conn.query('INSERT INTO csp_reports (_data) VALUES ($1) RETURNING id', [ stringify(report) ]);

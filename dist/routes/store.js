@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../globals");
-const RSEngine_1 = require("../libs/RSEngine");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const http_errors_1 = __importDefault(require("http-errors"));
 const router = express_1.default.Router();
 const redbubbleData = [
@@ -126,7 +126,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 				<div class="store-row">
 					${redbubble.map((item) => {
             return `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="item">
-							<img src="resources/img/redbubble/${RSEngine_1.RSRandom.Choose(item.images)}" alt="${RSEngine_1.RSMisc.EscapeHtml(item.alt)}" title="${RSEngine_1.RSMisc.EscapeHtml(item.alt)}" width="200" height="200">
+							<img src="resources/img/redbubble/${RSEngine_1.RSRandom.Choose(item.images)}" alt="${RSEngine_1.RSUtils.EscapeHtml(item.alt)}" title="${RSEngine_1.RSUtils.EscapeHtml(item.alt)}" width="200" height="200">
 						</a>`;
         }).join('')}
 				</div>
@@ -141,7 +141,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 				<div class="store-row">
 					${teespring.map((item) => {
             return `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="item">
-							<img src="resources/img/teespring/${RSEngine_1.RSRandom.Choose(item.images)}" alt="${RSEngine_1.RSMisc.EscapeHtml(item.alt)}" title="${RSEngine_1.RSMisc.EscapeHtml(item.alt)}" width="200" height="200">
+							<img src="resources/img/teespring/${RSEngine_1.RSRandom.Choose(item.images)}" alt="${RSEngine_1.RSUtils.EscapeHtml(item.alt)}" title="${RSEngine_1.RSUtils.EscapeHtml(item.alt)}" width="200" height="200">
 						</a>`;
         }).join('')}
 				</div>

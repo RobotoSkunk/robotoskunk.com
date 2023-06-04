@@ -1,15 +1,15 @@
-import conf from './conf';
+import env from './env';
 import phrases from './data/phrases';
 
-import { logger, loggerStream } from './libs/logger';
+import { logger, loggerStream } from './libraries/logger';
 
-conf.production = process.env.NODE_ENV === 'production';
+env.production = process.env.NODE_ENV === 'production';
 
-if (!conf.production) {
-	conf.root = 'http://localhost';
-	conf.domain = 'localhost';
+if (!env.production) {
+	env.root = 'http://localhost';
+	env.domain = 'localhost';
 
-	conf.hcaptcha_keys = {
+	env.hcaptcha_keys = {
 		site_key: '10000000-ffff-ffff-ffff-000000000001',
 		secret_key: '0x0000000000000000000000000000000000000000'
 	}
@@ -31,5 +31,5 @@ export const regex = {
 
 
 
-export { conf, logger, phrases, loggerStream };
+export { env, logger, phrases, loggerStream };
 

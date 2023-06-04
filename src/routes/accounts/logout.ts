@@ -1,6 +1,6 @@
-import { conf } from '../../globals';
+import { env } from '../../globals';
 import httpError from 'http-errors';
-import { UserAuditLog } from '../../libs/db';
+import { UserAuditLog } from '../../libraries/db';
 import express from 'express';
 
 const router = express.Router();
@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
 
 	res.rs.html.meta.setSubtitle('Logout');
 
-	res.rs.html.head = `<script defer src="/resources/js/logout.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+	res.rs.html.head = `<script defer src="/resources/js/logout.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
 
 	res.rs.html.body = `<div class="section" data-height="250">

@@ -1,6 +1,6 @@
 import express from 'express';
 import { logger } from '../globals';
-import { RSMisc, RSRandom } from '../libs/RSEngine';
+import { RSUtils, RSRandom } from 'dotcomcore/dist/RSEngine';
 import httpError from 'http-errors';
 
 const router = express.Router();
@@ -129,7 +129,7 @@ router.get('/', async (req, res, next) => {
 				<div class="store-row">
 					${redbubble.map((item) => {
 						return `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="item">
-							<img src="resources/img/redbubble/${RSRandom.Choose(item.images)}" alt="${RSMisc.EscapeHtml(item.alt)}" title="${RSMisc.EscapeHtml(item.alt)}" width="200" height="200">
+							<img src="resources/img/redbubble/${RSRandom.Choose(item.images)}" alt="${RSUtils.EscapeHtml(item.alt)}" title="${RSUtils.EscapeHtml(item.alt)}" width="200" height="200">
 						</a>`;
 					}).join('')}
 				</div>
@@ -144,7 +144,7 @@ router.get('/', async (req, res, next) => {
 				<div class="store-row">
 					${teespring.map((item) => {
 						return `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="item">
-							<img src="resources/img/teespring/${RSRandom.Choose(item.images)}" alt="${RSMisc.EscapeHtml(item.alt)}" title="${RSMisc.EscapeHtml(item.alt)}" width="200" height="200">
+							<img src="resources/img/teespring/${RSRandom.Choose(item.images)}" alt="${RSUtils.EscapeHtml(item.alt)}" title="${RSUtils.EscapeHtml(item.alt)}" width="200" height="200">
 						</a>`;
 					}).join('')}
 				</div>

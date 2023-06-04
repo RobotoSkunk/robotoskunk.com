@@ -38,8 +38,8 @@ const express_1 = __importDefault(require("express"));
 const http_errors_1 = __importDefault(require("http-errors"));
 const ejs_1 = __importDefault(require("ejs"));
 const globals_1 = require("../../globals");
-const db_1 = require("../../libs/db");
-const PayPal = __importStar(require("../../libs/paypal"));
+const db_1 = require("../../libraries/db");
+const PayPal = __importStar(require("../../libraries/paypal"));
 const router = express_1.default.Router();
 router.get('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -117,7 +117,7 @@ router.get('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             price *= 1 - comm.discount;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('commissions/order.ejs'), {
             nonce: res.rs.server.nonce,
-            paypal: globals_1.conf.paypal.id,
+            paypal: globals_1.env.paypal.id,
             title: comm._title,
             canvas: `${comm._size.x} x ${comm._size.y}`,
             deadline: comm.deadline ? `<script nonce="${res.rs.server.nonce}">document.write(new Date(${comm.deadline.getTime()}).toLocaleDateString());</script>` : '<i>Still negotiating...</i>',

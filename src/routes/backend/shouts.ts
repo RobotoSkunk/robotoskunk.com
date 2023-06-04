@@ -1,11 +1,11 @@
 import express from 'express';
 import { logger } from '../../globals';
 import httpError from 'http-errors';
-import { pgConn, User, Shout } from '../../libs/db';
-import { RSTime } from '../../libs/RSEngine';
-import { __commentLimiter, __httpError, __rateLimiter, __setHeaderAuto } from '../../libs/rateLimiter';
-import { LangCode } from '../../libs/lang';
-import { Blacklist } from '../../libs/db-utils';
+import { pgConn, User, Shout } from '../../libraries/db';
+import { RSTime } from 'dotcomcore/dist/RSEngine';
+import { __commentLimiter, __httpError, __rateLimiter, __setHeaderAuto } from '../../libraries/rateLimiter';
+import { LangCode } from '../../libraries/lang';
+import { Blacklist } from '../../libraries/db-utils';
 
 const router = express.Router();
 

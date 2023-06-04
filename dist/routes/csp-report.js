@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../globals");
-const RSEngine_1 = require("../libs/RSEngine");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const http_errors_1 = __importDefault(require("http-errors"));
-const db_1 = require("../libs/db");
+const db_1 = require("../libraries/db");
 const safe_stable_stringify_1 = __importDefault(require("safe-stable-stringify"));
 // file deepcode ignore HTTPSourceWithUncheckedType: Schema.validate() is used
 const router = express_1.default.Router();
@@ -48,7 +48,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 return res.status(200);
         }
         const report = Object.assign({
-            'user-agent': RSEngine_1.RSMisc.AnonymizeAgent(req.headers['user-agent']),
+            'user-agent': RSEngine_1.RSUtils.AnonymizeAgent(req.headers['user-agent']),
         }, req.body);
         const _res = yield conn.query('INSERT INTO csp_reports (_data) VALUES ($1) RETURNING id', [(0, safe_stable_stringify_1.default)(report)]);
         globals_1.logger.error(`CSP violation, check the database for more information. (Case ${_res.rows[0].id})`);

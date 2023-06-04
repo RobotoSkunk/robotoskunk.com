@@ -14,13 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
 const http_errors_1 = __importDefault(require("http-errors"));
-const analytics_1 = require("../../libs/analytics");
-const RSEngine_1 = require("../../libs/RSEngine");
+const analytics_1 = require("../../libraries/analytics");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const router = express_1.default.Router();
 router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const dnt = req.headers['dnt'];
-        if (dnt === '1' && globals_1.conf.production)
+        if (dnt === '1' && globals_1.env.production)
             return res.status(403).json({ message: 'DNT is enabled.', dnt: true });
         if (!req.headers['user-agent'])
             return next((0, http_errors_1.default)(400, 'No user agent provided.'));
@@ -35,15 +35,15 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             return next((0, http_errors_1.default)(400, 'Invalid timezone.'));
         if (typeof body.screen[0] !== 'number' || typeof body.screen[1] !== 'number')
             return next((0, http_errors_1.default)(400, 'Invalid screen size.'));
-        if (!RSEngine_1.RSMisc.ValidURL(body.path))
+        if (!RSEngine_1.RSUtils.ValidURL(body.path))
             return next((0, http_errors_1.default)(400, 'Invalid path.'));
         if (body.referrer) {
             if (typeof body.referrer !== 'string')
                 return next((0, http_errors_1.default)(400, 'Invalid referrer.'));
-            if (!RSEngine_1.RSMisc.ValidURL(body.referrer))
+            if (!RSEngine_1.RSUtils.ValidURL(body.referrer))
                 return next((0, http_errors_1.default)(400, 'Invalid referrer.'));
             const referrer = new URL(body.referrer);
-            if (referrer.hostname === globals_1.conf.domain)
+            if (referrer.hostname === globals_1.env.domain)
                 return res.status(200).json({ message: 'IGNORED' });
             switch (referrer.hostname) {
                 case 't.co':
@@ -59,7 +59,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         }
         try {
             const href = new URL(body.path);
-            yield analytics_1.Analytics.SetVisit(body.timezone, href.pathname, body.screen, body.referrer, RSEngine_1.RSMisc.AnonymizeAgent(req.useragent.source));
+            yield analytics_1.Analytics.SetVisit(body.timezone, href.pathname, body.screen, body.referrer, RSEngine_1.RSUtils.AnonymizeAgent(req.useragent.source));
         }
         catch (e) {
             globals_1.logger.error(e);

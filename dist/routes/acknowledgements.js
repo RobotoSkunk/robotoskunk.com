@@ -19,8 +19,8 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         res.rs.html.meta.setSubtitle('Acknowledgements');
         res.rs.html.meta.description = 'Acknowledgements to the amazing open source projects that made this website possible.';
-        res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" as="style">
-			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}">
+        res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" as="style">
+			<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}">
 			
 			<style>h3 { margin-bottom: 0 }</style>`;
         res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('acknowledgements.ejs'));

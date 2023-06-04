@@ -16,8 +16,8 @@ const router = express_1.default.Router();
 router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     res.rs.html.meta.setSubtitle('Emails');
     res.rs.html.meta.description = 'Learn more about how RobotoSkunk handles emails.';
-    res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}" as="style">
-		<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.conf.version}">`;
+    res.rs.html.head = `<link rel="preload" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}" as="style">
+		<link rel="stylesheet" href="/resources/css/bored-stuff.css?v=${res.rs.env.version}">`;
     res.rs.html.body = `<br/><br/>
 		<h1>How we handle emails</h1>
 		<div class="bored-header">

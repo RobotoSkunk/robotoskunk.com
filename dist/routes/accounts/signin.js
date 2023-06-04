@@ -13,11 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../../globals");
-const RSEngine_1 = require("../../libs/RSEngine");
-const db_1 = require("../../libs/db");
+const RSEngine_1 = require("dotcomcore/dist/RSEngine");
+const db_1 = require("../../libraries/db");
 const http_errors_1 = __importDefault(require("http-errors"));
-const schema_1 = require("../../libs/schema");
-const rateLimiter_1 = require("../../libs/rateLimiter");
+const schema_1 = require("../../libraries/schema");
+const rateLimiter_1 = require("../../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const router = express_1.default.Router();
 var Errors;
@@ -39,19 +39,19 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         res.rs.html.meta.description = 'Sign in with your RobotoSkunk account.';
         if (!token) {
             res.rs.html.meta.setSubtitle('Sign In');
-            res.rs.html.head = `<script defer src="/resources/js/signin.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
-				<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>
+            res.rs.html.head = `<script defer src="/resources/js/signin.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+				<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
 
 				<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
 				<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
             // res.rs.form = {
             // 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
             // };
-            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: globals_1.conf.hcaptcha_keys.site_key });
+            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: globals_1.env.hcaptcha_keys.site_key });
         }
         else {
             res.rs.html.meta.setSubtitle('Two-Factor Authentication');
-            res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.conf.version}" nonce="${res.rs.server.nonce}"></script>`;
+            res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
             res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signin-2fa.ejs'), {
                 'csrf': yield token.GenerateCSRF(),
             });
@@ -87,7 +87,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         // #region Check captcha
         var validRecaptcha = false;
         if (body['h-captcha-response'])
-            validRecaptcha = yield RSEngine_1.RSMisc.VerifyCaptcha(body['h-captcha-response'], globals_1.conf.hcaptcha_keys.secret_key);
+            validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key);
         if (!validRecaptcha) {
             res.status(403).json({
                 'code': Errors.INVALID_RECAPTCHA,
@@ -106,7 +106,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         // #endregion
-        const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${body.email}`, globals_1.conf.keys.RATE_LIMITER);
+        const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${body.email}`, globals_1.env.keys.RATE_LIMITER);
         try {
             const r = yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
             if (r !== null) {
@@ -213,7 +213,7 @@ router.post('/twofa', (req, res, next) => __awaiter(void 0, void 0, void 0, func
     const user = yield token.GetUser(), twofactor = yield user.Enabled2FA();
     if (!twofactor)
         return next((0, http_errors_1.default)(403, 'Forbidden'));
-    const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.conf.keys.RATE_LIMITER);
+    const _limiterKey = RSEngine_1.RSCrypto.HMAC(`${req.ip}:${user.id}`, globals_1.env.keys.RATE_LIMITER);
     try {
         const r = yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.get(_limiterKey);
         if (r !== null) {
