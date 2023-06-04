@@ -136,7 +136,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 'message': 'Username must be between 3 and 16 characters.'
             });
         }
-        if (yield db_1.User.ExistsByHandler(body.username)) {
+        if (yield db_1.LegacyUser.ExistsByHandler(body.username)) {
             return res.status(400).json({
                 'code': Errors.INVALID_USERNAME,
                 'message': 'Username is already taken.'
@@ -148,7 +148,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 'message': 'Password is too weak.'
             });
         }
-        if (!(yield db_1.Email.Validate(body.email))) {
+        if (!(yield db_1.LegacyEmail.Validate(body.email))) {
             return res.status(400).json({
                 'code': Errors.INVALID_EMAIL,
                 'message': 'Invalid email.'
@@ -156,17 +156,17 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         }
         // #endregion
         yield RSEngine_1.RSRandom.Wait(0, 150);
-        if (!(yield db_1.Email.Exists(body.email))) {
-            const response = yield db_1.User.Set(body.username, body.email, body.password, bday);
-            if (response === db_1.User.Code.INTERNAL_ERROR)
+        if (!(yield db_1.LegacyEmail.Exists(body.email))) {
+            const response = yield db_1.LegacyUser.Set(body.username, body.email, body.password, bday);
+            if (response === db_1.LegacyUser.Code.INTERNAL_ERROR)
                 return next((0, http_errors_1.default)(500, 'Something went wrong while signing up.'));
-            if (response === db_1.User.Code.ALREADY_EXISTS) {
+            if (response === db_1.LegacyUser.Code.ALREADY_EXISTS) {
                 return res.status(403).json({
                     'code': Errors.INVALID_USERNAME,
                     'message': 'Username is already taken.'
                 });
             }
-            if (response === db_1.User.Code.MINOR) {
+            if (response === db_1.LegacyUser.Code.MINOR) {
                 return res.status(403).json({
                     'code': Errors.INVALID_BIRTHDATE,
                     'message': 'You must be at least 8 years old.'

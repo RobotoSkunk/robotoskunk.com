@@ -292,13 +292,13 @@ router.post('/profile', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (bio.length > 256)
             return res.status(400).json({ 'message': 'Biography must be less than 256 characters long.' });
         const uid = tokenData.token.usrid;
-        const anotherUser = yield db_1.User.GetByHandler(req.body.handler);
+        const anotherUser = yield db_1.LegacyUser.GetByHandler(req.body.handler);
         if (anotherUser && anotherUser.id !== uid)
             return res.status(400).json({ 'message': 'Handler is already taken.' });
         if (bio.length === 0)
             req.body.bio = null;
         yield conn.query(`UPDATE users SET username = $1, _handler = $2, bio = $3 WHERE id = $4`, [username, handler, bio, uid]);
-        res.status(200).json({ 'message': 'User data updated successfully.' });
+        res.status(200).json({ 'message': 'LegacyUser data updated successfully.' });
     }
     catch (e) {
         globals_1.logger.error(e);
@@ -501,25 +501,25 @@ router.put('/email', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const emailCount = yield user.GetEmailsCount();
         if (emailCount >= 5)
             return res.status(403).json({ 'message': 'You can\'t add more than 5 emails.' });
-        if (!(yield db_1.Email.Validate(email)))
+        if (!(yield db_1.LegacyEmail.Validate(email)))
             return res.status(403).json({ 'message': 'Please use a valid email.' });
-        const emailObj = yield db_1.Email.Get(email);
+        const emailObj = yield db_1.LegacyEmail.Get(email);
         const cryptoKey = yield user.GetCryptoKey();
         yield RSEngine_1.RSRandom.Wait(50, 100);
         if (!emailObj) {
-            const _tmp = yield db_1.Email.Set(email, cryptoKey, user.id, db_1.Email.Type.SECONDARY);
+            const _tmp = yield db_1.LegacyEmail.Set(email, cryptoKey, user.id, db_1.LegacyEmail.Type.SECONDARY);
             if (!_tmp)
                 return res.status(400).json({ 'message': 'Invalid email.' });
         }
         else {
             if (emailObj.userId === user.id)
                 return res.status(403).json({ 'message': 'This email is already registered to your account.' });
-            const _tmp = yield db_1.Email.SetFake(email, cryptoKey, user.id, db_1.Email.Type.SECONDARY);
+            const _tmp = yield db_1.LegacyEmail.SetFake(email, cryptoKey, user.id, db_1.LegacyEmail.Type.SECONDARY);
             if (!_tmp)
                 return res.status(403).json({ 'message': 'Invalid email.' });
         }
         db_1.UserAuditLog.Add(user.id, (_u = req.useragent) === null || _u === void 0 ? void 0 : _u.source, db_1.UserAuditLog.Type.EMAIL_ADD, db_1.UserAuditLog.Relevance.LOW);
-        res.status(200).json({ 'message': 'Email added successfully.' });
+        res.status(200).json({ 'message': 'LegacyEmail added successfully.' });
     }
     catch (e) {
         globals_1.logger.error(e);
@@ -546,14 +546,14 @@ router.post('/email/set', (req, res, next) => __awaiter(void 0, void 0, void 0, 
         // #endregion
         yield RSEngine_1.RSRandom.Wait(50, 100);
         // #region Check if emails are valid
-        const primaryEmail = yield db_1.Email.GetById(primary);
+        const primaryEmail = yield db_1.LegacyEmail.GetById(primary);
         if (!primaryEmail)
             return res.status(400).json({ 'message': 'Invalid primary email.' });
         if (primaryEmail.userId !== user.id)
             return res.status(403).json({ 'message': 'Invalid primary email.' });
         if (!primaryEmail.verified)
             return res.status(403).json({ 'message': 'Primary email is not verified.' });
-        const contactEmail = contact === 'none' ? null : yield db_1.Email.GetById(contact);
+        const contactEmail = contact === 'none' ? null : yield db_1.LegacyEmail.GetById(contact);
         if (contact !== 'none') {
             if (!contactEmail)
                 return res.status(400).json({ 'message': 'Invalid contact email.' });
@@ -577,7 +577,7 @@ router.post('/email/set', (req, res, next) => __awaiter(void 0, void 0, void 0, 
             yield user.UnsetContactEmail();
         else if (!_cont && contactEmail)
             yield user.SetContactEmail(contactEmail.id);
-        res.status(200).json({ 'message': 'Email settings updated successfully.' });
+        res.status(200).json({ 'message': 'LegacyEmail settings updated successfully.' });
     }
     catch (e) {
         globals_1.logger.error(e);
@@ -597,15 +597,15 @@ router.post('/email/send-verification', (req, res, next) => __awaiter(void 0, vo
         const email = req.body.email;
         if (typeof email !== 'string')
             return next((0, http_errors_1.default)(400, 'Invalid request.'));
-        const emailObj = yield db_1.Email.GetById(email);
+        const emailObj = yield db_1.LegacyEmail.GetById(email);
         if (!emailObj)
             return res.status(400).json({ 'message': 'Invalid email.' });
         if (emailObj.userId !== user.id)
             return res.status(400).json({ 'message': 'Invalid email.' });
         if (emailObj.verified)
-            return res.status(400).json({ 'message': 'Email already verified.' });
+            return res.status(400).json({ 'message': 'LegacyEmail already verified.' });
         yield RSEngine_1.RSRandom.Wait(50, 100);
-        yield emailObj.Send(db_1.Email.MailType.VERIFY);
+        yield emailObj.Send(db_1.LegacyEmail.MailType.VERIFY);
         res.status(200).json({
             'message': 'If that email exists and is not being used by another account, you will receive a verification email shortly.'
         });
@@ -629,17 +629,17 @@ router.post('/email/delete', (req, res, next) => __awaiter(void 0, void 0, void 
         const email = req.body.email;
         if (typeof email !== 'string')
             return next((0, http_errors_1.default)(400, 'Invalid request.'));
-        const emailObj = yield db_1.Email.GetById(email);
+        const emailObj = yield db_1.LegacyEmail.GetById(email);
         if (!emailObj)
             return res.status(400).json({ 'message': 'Invalid email.' });
         if (emailObj.userId !== user.id)
             return res.status(400).json({ 'message': 'Invalid email.' });
-        if (emailObj.type === db_1.Email.Type.PRIMARY)
+        if (emailObj.type === db_1.LegacyEmail.Type.PRIMARY)
             return res.status(400).json({ 'message': 'You can\'t remove your primary email.' });
         yield RSEngine_1.RSRandom.Wait(50, 100);
         yield emailObj.Delete();
         db_1.UserAuditLog.Add(user.id, (_w = req.useragent) === null || _w === void 0 ? void 0 : _w.source, db_1.UserAuditLog.Type.EMAIL_REMOVE, db_1.UserAuditLog.Relevance.MEDIUM);
-        res.status(200).json({ 'message': 'Email deleted successfully.' });
+        res.status(200).json({ 'message': 'LegacyEmail deleted successfully.' });
     }
     catch (e) {
         globals_1.logger.error(e);

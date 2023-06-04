@@ -24,7 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.UserToken = exports.Token = exports.Email = exports.mailer = exports.rtConn = exports.pgConn = void 0;
+exports.LegacyUser = exports.UserToken = exports.Token = exports.LegacyEmail = exports.mailer = exports.rtConn = exports.pgConn = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -49,7 +49,7 @@ exports.mailer = new mailer_1.Mailer({
         pass: globals_1.env.emails.noreply.auth.pass
     }
 }, globals_1.logger, globals_1.env.production ? mailer_1.Mailer.Mode.Internal : mailer_1.Mailer.Mode.Debug, globals_1.env.root, conn_1.pgConn, globals_1.env.keys.MASTER);
-class Email {
+class LegacyEmail {
     constructor(id, hash, email, userId, type, verified, createdAt, isFake) {
         this.id = id;
         this.hash = hash;
@@ -68,7 +68,7 @@ class Email {
                 if (res.rowCount === 0)
                     return null;
                 const row = res.rows[0];
-                return new Email(row.id, row.hash, row.email, row.usrid, row.refer, row.verified, row.created_at, row.is_fake);
+                return new LegacyEmail(row.id, row.hash, row.email, row.usrid, row.refer, row.verified, row.created_at, row.is_fake);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -82,11 +82,11 @@ class Email {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                const res = yield client.query(`SELECT id FROM emails WHERE hash = $1`, [Email.HMAC(email.toLowerCase())]);
+                const res = yield client.query(`SELECT id FROM emails WHERE hash = $1`, [LegacyEmail.HMAC(email.toLowerCase())]);
                 if (res.rowCount === 0)
                     return null;
                 const row = res.rows[0];
-                return yield Email.GetById(row.id);
+                return yield LegacyEmail.GetById(row.id);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -103,10 +103,10 @@ class Email {
     GetUser() {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                const u = yield User.GetById(this.userId);
+                const u = yield LegacyUser.GetById(this.userId);
                 if (u)
                     return resolve(u);
-                reject(new Error('User not found'));
+                reject(new Error('LegacyUser not found'));
             }));
         });
     }
@@ -125,9 +125,9 @@ class Email {
                 return false;
             const [user, domain] = email.split('@');
             // Check if user and domain are valid
-            if (Email.invalidNames.includes(user))
+            if (LegacyEmail.invalidNames.includes(user))
                 return false;
-            if (Email.validDomains.includes(domain))
+            if (LegacyEmail.validDomains.includes(domain))
                 return true;
             try {
                 const readFile = util_1.default.promisify(fs_1.default.readFile);
@@ -137,7 +137,7 @@ class Email {
                         return true;
             }
             catch (_) { }
-            const records = yield Email.LookupMX(domain);
+            const records = yield LegacyEmail.LookupMX(domain);
             if (records.length === 0)
                 return false;
             return true;
@@ -157,7 +157,7 @@ class Email {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                const res = yield client.query(`SELECT id FROM emails WHERE hash = $1`, [Email.HMAC(email.toLowerCase())]);
+                const res = yield client.query(`SELECT id FROM emails WHERE hash = $1`, [LegacyEmail.HMAC(email.toLowerCase())]);
                 return res.rowCount > 0;
             }
             catch (e) {
@@ -183,20 +183,20 @@ class Email {
             }
         });
     }
-    static Set(email, key, uid, type = Email.Type.PRIMARY) {
+    static Set(email, key, uid, type = LegacyEmail.Type.PRIMARY) {
         return __awaiter(this, void 0, void 0, function* () {
-            const hash = Email.HMAC(email.toLowerCase());
+            const hash = LegacyEmail.HMAC(email.toLowerCase());
             const enc = yield RSEngine_1.RSCrypto.Encrypt(email.toLowerCase(), key);
             const client = yield conn_1.pgConn.connect();
             try {
-                if (!(yield User.Exists(uid)))
+                if (!(yield LegacyUser.Exists(uid)))
                     return null;
-                if (yield Email.Exists(email))
+                if (yield LegacyEmail.Exists(email))
                     return null;
                 const res = yield client.query('INSERT INTO emails (hash, email, usrid, refer) VALUES ($1, $2, $3, $4) RETURNING id', [hash, enc, uid, type]);
                 if (res.rowCount === 0)
                     return null;
-                return Email.GetById(res.rows[0].id);
+                return LegacyEmail.GetById(res.rows[0].id);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -207,13 +207,13 @@ class Email {
             return null;
         });
     }
-    static SetFake(email, key, uid, type = Email.Type.PRIMARY) {
+    static SetFake(email, key, uid, type = LegacyEmail.Type.PRIMARY) {
         return __awaiter(this, void 0, void 0, function* () {
-            const hash = Email.HMAC(RSEngine_1.RSCrypto.RandomBytes(32));
+            const hash = LegacyEmail.HMAC(RSEngine_1.RSCrypto.RandomBytes(32));
             const enc = yield RSEngine_1.RSCrypto.Encrypt(email.toLowerCase(), key);
             const client = yield conn_1.pgConn.connect();
             try {
-                if (!(yield User.Exists(uid)))
+                if (!(yield LegacyUser.Exists(uid)))
                     return false;
                 yield client.query('INSERT INTO emails (hash, email, usrid, refer, is_fake) VALUES ($1, $2, $3, $4, true)', [hash, enc, uid, type]);
                 return true;
@@ -255,7 +255,7 @@ class Email {
             try {
                 var body, subject;
                 switch (type) {
-                    case Email.MailType.NEW_USER: {
+                    case LegacyEmail.MailType.NEW_USER: {
                         const id = RSEngine_1.RSCrypto.RandomBytes(16);
                         const validator = RSEngine_1.RSCrypto.RandomBytes(32);
                         const valHash = RSEngine_1.RSCrypto.HMAC(validator, globals_1.env.keys.HMAC);
@@ -268,7 +268,7 @@ class Email {
 						<p>If it wasn't you, you can safely ignore this email. If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
                         break;
                     }
-                    case Email.MailType.VERIFY: {
+                    case LegacyEmail.MailType.VERIFY: {
                         if (this.verified)
                             return;
                         var token;
@@ -294,8 +294,8 @@ class Email {
 						<p>If it wasn't you, you can safely ignore this email. If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
                         break;
                     }
-                    case Email.MailType.PASSWORD_RESET_REQUEST: {
-                        if (!this.verified || this.type !== Email.Type.PRIMARY)
+                    case LegacyEmail.MailType.PASSWORD_RESET_REQUEST: {
+                        if (!this.verified || this.type !== LegacyEmail.Type.PRIMARY)
                             return;
                         var token;
                         const res = yield conn.query(`SELECT id FROM password_resets WHERE usrid = $1`, [this.userId]);
@@ -322,7 +322,7 @@ class Email {
 						<p>If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
                         break;
                     }
-                    case Email.MailType.PASSWORD_RESET: {
+                    case LegacyEmail.MailType.PASSWORD_RESET: {
                         subject = 'Your password has been reset';
                         body = `<h2>Your password has been reset.</h2>
 						<p>Your password has been reset. If you did request this, you can now log in with your new password.
@@ -330,7 +330,7 @@ class Email {
 						<p>If you did not request this, please contact us at <a href="${contactLink}">${contactLink}</a> immediately.`;
                         break;
                     }
-                    case Email.MailType.ACCOUNT_DELETION: {
+                    case LegacyEmail.MailType.ACCOUNT_DELETION: {
                         subject = 'Someone has requested to delete your account';
                         body = `<h2>Someone has requested to delete your account.</h2>
 						<p>Someone has requested to delete your account. If it was you, you shouldn't need to do anything. Your account will be deleted in 7 days.
@@ -357,7 +357,7 @@ class Email {
         return __awaiter(this, void 0, void 0, function* () {
             const conn = yield conn_1.pgConn.connect();
             try {
-                if (this.type === Email.Type.PRIMARY)
+                if (this.type === LegacyEmail.Type.PRIMARY)
                     return false;
                 yield conn.query('DELETE FROM emails WHERE hash = $1', [this.hash]);
                 return true;
@@ -398,14 +398,14 @@ class Email {
         });
     }
 }
-exports.Email = Email;
-(function (Email) {
+exports.LegacyEmail = LegacyEmail;
+(function (LegacyEmail) {
     let Type;
     (function (Type) {
         Type[Type["PRIMARY"] = 0] = "PRIMARY";
         Type[Type["CONTACT"] = 1] = "CONTACT";
         Type[Type["SECONDARY"] = 2] = "SECONDARY";
-    })(Type = Email.Type || (Email.Type = {}));
+    })(Type = LegacyEmail.Type || (LegacyEmail.Type = {}));
     let MailType;
     (function (MailType) {
         MailType[MailType["NEW_USER"] = 0] = "NEW_USER";
@@ -413,8 +413,8 @@ exports.Email = Email;
         MailType[MailType["PASSWORD_RESET_REQUEST"] = 2] = "PASSWORD_RESET_REQUEST";
         MailType[MailType["PASSWORD_RESET"] = 3] = "PASSWORD_RESET";
         MailType[MailType["ACCOUNT_DELETION"] = 4] = "ACCOUNT_DELETION";
-    })(MailType = Email.MailType || (Email.MailType = {}));
-    Email.validDomains = [
+    })(MailType = LegacyEmail.MailType || (LegacyEmail.MailType = {}));
+    LegacyEmail.validDomains = [
         'live.com.mx', 'gmail.com', 'yahoo.com', 'hotmail.com', 'aol.com', 'hotmail.co.uk', 'hotmail.fr',
         'msn.com', 'yahoo.fr', 'wanadoo.fr', 'orange.fr', 'comcast.net', 'yahoo.co.uk',
         'yahoo.com.br', 'yahoo.co.in', 'live.com', 'rediffmail.com', 'free.fr', 'gmx.de',
@@ -433,13 +433,13 @@ exports.Email = Email;
         'windstream.net', 'mac.com', 'centurytel.net', 'chello.nl', 'live.ca', 'aim.com', 'bigpond.net.au',
         'robotoskunk.com', 'microsoft.com', 'google.com', 'goddady.com'
     ];
-    Email.invalidNames = [
+    LegacyEmail.invalidNames = [
         'noreply', 'no-reply', 'support', 'example', 'info', 'user', 'mail', 'test', 'noreply-dominos',
         'microsoftstore', 'news', 'email', 'notification', 'purchases', 'purchase', 'notifications',
         'noreply-purchases', 'message', 'messages', 'no-responder', 'dominospizzamx', 'friendupdates',
         'mailer', 'reply'
     ];
-})(Email = exports.Email || (exports.Email = {}));
+})(LegacyEmail = exports.LegacyEmail || (exports.LegacyEmail = {}));
 class Token {
     constructor(id, validator, createdAt, expiresAt) {
         this.id = id;
@@ -465,7 +465,7 @@ class UserToken extends Token {
         this.verified = verified;
     }
     GetUser() {
-        return __awaiter(this, void 0, void 0, function* () { return yield User.GetById(this.usrid); });
+        return __awaiter(this, void 0, void 0, function* () { return yield LegacyUser.GetById(this.usrid); });
     }
     static Set(uid, remember, useragent, verified) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -696,7 +696,7 @@ class UserToken extends Token {
     }
 }
 exports.UserToken = UserToken;
-class User {
+class LegacyUser {
     constructor(id, hash, name, handler, birthdate, roles) {
         this.id = id;
         this.hash = hash;
@@ -715,31 +715,31 @@ class User {
     }
     GetCryptoKey() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield User.GenerateCryptoKey(this.hash);
+            return yield LegacyUser.GenerateCryptoKey(this.hash);
         });
     }
     // #endregion
-    // #region User management
+    // #region LegacyUser management
     static Auth(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = { code: User.Code.INTERNAL_ERROR };
+            const response = { code: LegacyUser.Code.INTERNAL_ERROR };
             const client = yield conn_1.pgConn.connect();
             yield RSEngine_1.RSRandom.Wait(0, 150);
             try {
-                const emailObj = yield Email.Get(email);
+                const emailObj = yield LegacyEmail.Get(email);
                 if (!emailObj) {
-                    response.code = User.Code.INVALID_EMAIL_OR_PASSWORD;
+                    response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD;
                     return response;
                 }
-                if (emailObj.type != Email.Type.PRIMARY) {
-                    response.code = User.Code.INVALID_EMAIL_OR_PASSWORD;
+                if (emailObj.type != LegacyEmail.Type.PRIMARY) {
+                    response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD;
                     return response;
                 }
                 const res = yield client.query('SELECT id, password, totp_secret, totp_enabled FROM users WHERE id = $1', [emailObj.userId]);
                 const passHash = res.rows[0].password;
                 if (passHash.startsWith('$2')) {
                     if (!(yield bcrypt_1.default.compare(password, passHash))) {
-                        response.code = User.Code.INVALID_EMAIL_OR_PASSWORD;
+                        response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD;
                         return response;
                     }
                     const newPass = yield argon2_1.default.hash(password);
@@ -747,7 +747,7 @@ class User {
                 }
                 else {
                     if (!(yield argon2_1.default.verify(passHash, password))) {
-                        response.code = User.Code.INVALID_EMAIL_OR_PASSWORD;
+                        response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD;
                         return response;
                     }
                     if (argon2_1.default.needsRehash(passHash)) {
@@ -755,8 +755,8 @@ class User {
                         yield client.query('UPDATE users SET password = $1 WHERE id = $2', [newPass, emailObj.userId]);
                     }
                 }
-                response.code = User.Code.SUCCESS;
-                response.user = yield User.GetById(res.rows[0].id);
+                response.code = LegacyUser.Code.SUCCESS;
+                response.user = yield LegacyUser.GetById(res.rows[0].id);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -769,21 +769,21 @@ class User {
     }
     static Set(username, email, password, birthdate) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = User.Code.INTERNAL_ERROR;
+            const response = LegacyUser.Code.INTERNAL_ERROR;
             const client = yield conn_1.pgConn.connect();
             try {
                 if (!RSEngine_1.RSTime.MinimumAge(birthdate))
-                    return User.Code.MINOR;
-                if (yield User.ExistsByHandler(username))
-                    return User.Code.ALREADY_EXISTS;
+                    return LegacyUser.Code.MINOR;
+                if (yield LegacyUser.ExistsByHandler(username))
+                    return LegacyUser.Code.ALREADY_EXISTS;
                 const hash = crypto_1.default.randomBytes(32).toString('hex');
                 const pwrd = yield argon2_1.default.hash(password);
                 const res = yield client.query('INSERT INTO users (hash, username, _handler, password, birthdate) VALUES ($1, $2, $3, $4, $5) RETURNING id', [hash, username, username, pwrd, birthdate]);
-                const _email = yield Email.Set(email, yield User.GenerateCryptoKey(hash), res.rows[0].id);
+                const _email = yield LegacyEmail.Set(email, yield LegacyUser.GenerateCryptoKey(hash), res.rows[0].id);
                 if (!_email)
-                    return User.Code.INTERNAL_ERROR;
-                _email.Send(Email.MailType.NEW_USER);
-                return User.Code.SUCCESS;
+                    return LegacyUser.Code.INTERNAL_ERROR;
+                _email.Send(LegacyEmail.MailType.NEW_USER);
+                return LegacyUser.Code.SUCCESS;
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -802,7 +802,7 @@ class User {
                 if (res.rowCount === 0)
                     return null;
                 const user = res.rows[0];
-                return new User(user.id, user.hash, user.username, user._handler, user.birthdate, new db_utils_1.UserRoles(user.roles));
+                return new LegacyUser(user.id, user.hash, user.username, user._handler, user.birthdate, new db_utils_1.UserRoles(user.roles));
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -820,7 +820,7 @@ class User {
                 const res = yield client.query('SELECT id FROM users WHERE LOWER(_handler) = LOWER($1)', [handler]);
                 if (res.rowCount === 0)
                     return null;
-                return yield User.GetById(res.rows[0].id);
+                return yield LegacyUser.GetById(res.rows[0].id);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -937,7 +937,7 @@ class User {
             try {
                 const res = yield __await(client.query('SELECT id FROM emails WHERE usrid = $1 ORDER BY refer ASC', [this.id]));
                 for (const row of res.rows)
-                    yield yield __await(yield __await(Email.GetById(row.id)));
+                    yield yield __await(yield __await(LegacyEmail.GetById(row.id)));
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -968,8 +968,8 @@ class User {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [Email.Type.SECONDARY, this.id, Email.Type.PRIMARY]);
-                yield client.query('UPDATE emails SET refer = $1 WHERE id = $2', [Email.Type.PRIMARY, id]);
+                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.PRIMARY]);
+                yield client.query('UPDATE emails SET refer = $1 WHERE id = $2', [LegacyEmail.Type.PRIMARY, id]);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -983,8 +983,8 @@ class User {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [Email.Type.SECONDARY, this.id, Email.Type.CONTACT]);
-                yield client.query('UPDATE emails SET refer = $1 WHERE id = $2', [Email.Type.CONTACT, id]);
+                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.CONTACT]);
+                yield client.query('UPDATE emails SET refer = $1 WHERE id = $2', [LegacyEmail.Type.CONTACT, id]);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -998,7 +998,7 @@ class User {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [Email.Type.SECONDARY, this.id, Email.Type.CONTACT]);
+                yield client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.CONTACT]);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -1012,8 +1012,8 @@ class User {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                const res = yield client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [this.id, Email.Type.PRIMARY]);
-                return yield Email.GetById(res.rows[0].id);
+                const res = yield client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [this.id, LegacyEmail.Type.PRIMARY]);
+                return yield LegacyEmail.GetById(res.rows[0].id);
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -1028,9 +1028,9 @@ class User {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield conn_1.pgConn.connect();
             try {
-                const res = yield client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [this.id, Email.Type.CONTACT]);
+                const res = yield client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [this.id, LegacyEmail.Type.CONTACT]);
                 if (res.rowCount > 0)
-                    return yield Email.GetById(res.rows[0].id);
+                    return yield LegacyEmail.GetById(res.rows[0].id);
                 return null;
             }
             catch (e) {
@@ -1265,7 +1265,7 @@ class User {
         });
     }
     // #endregion
-    // #region User interactions
+    // #region LegacyUser interactions
     //  #region Following
     AddFollow(user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1331,7 +1331,7 @@ class User {
             try {
                 const res = yield __await(client.query('SELECT author FROM follow_list WHERE victim = $1', [this.id]));
                 for (const row of res.rows)
-                    yield yield __await(yield __await(User.GetById(row.author)));
+                    yield yield __await(yield __await(LegacyUser.GetById(row.author)));
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -1422,7 +1422,7 @@ class User {
             try {
                 const res = yield __await(client.query('SELECT victim FROM block_list WHERE author = $1', [this.id]));
                 for (const row of res.rows)
-                    yield yield __await(yield __await(User.GetById(row.victim)));
+                    yield yield __await(yield __await(LegacyUser.GetById(row.victim)));
             }
             catch (e) {
                 globals_1.logger.error(e);
@@ -1455,7 +1455,7 @@ class User {
             const mentions = msg.match(/@([a-zA-Z0-9_-]+)/gm);
             if (mentions) {
                 for (const mention of mentions) {
-                    const user = yield User.GetByHandler(mention.slice(1));
+                    const user = yield LegacyUser.GetByHandler(mention.slice(1));
                     if (user)
                         msg = msg.replace(mention, `<@${user.id}>`);
                     else
@@ -1471,7 +1471,7 @@ class User {
             const mentions = msg.match(/<@([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})>/gm);
             if (mentions) {
                 for (const mention of mentions) {
-                    const user = yield User.GetById(mention.slice(2, -1));
+                    const user = yield LegacyUser.GetById(mention.slice(2, -1));
                     if (user)
                         msg = msg.replace(mention, `@${user.handler}`);
                     else
@@ -1504,8 +1504,8 @@ class User {
         });
     }
 }
-exports.User = User;
-(function (User) {
+exports.LegacyUser = LegacyUser;
+(function (LegacyUser) {
     let Code;
     (function (Code) {
         Code[Code["SUCCESS"] = 0] = "SUCCESS";
@@ -1515,6 +1515,6 @@ exports.User = User;
         // INVALID_2FA =               1 << 3,
         Code[Code["ALREADY_EXISTS"] = 16] = "ALREADY_EXISTS";
         Code[Code["MINOR"] = 32] = "MINOR";
-    })(Code = User.Code || (User.Code = {}));
-})(User = exports.User || (exports.User = {}));
+    })(Code = LegacyUser.Code || (LegacyUser.Code = {}));
+})(LegacyUser = exports.LegacyUser || (exports.LegacyUser = {}));
 //# sourceMappingURL=db-esentials.js.map

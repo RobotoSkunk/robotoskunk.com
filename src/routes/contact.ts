@@ -136,11 +136,11 @@ router.get('/', async (req, res, next) => {
 					</svg><b>Telegram</b>
 				</a>
 
-				<a href="mailto:contact@robotoskunk.com" class="dm-button ml" target="_blank" title="Email to contact@robotoskunk.com">
+				<a href="mailto:contact@robotoskunk.com" class="dm-button ml" target="_blank" title="LegacyEmail to contact@robotoskunk.com">
 					<svg width="30px" viewBox="0 0 150 100">
 						<path d="M75,48,148.65,8.83A15,15,0,0,0,135,0H15A15,15,0,0,0,1.35,8.83Z"/>
 						<path d="M75,60.07,0,19V85a15,15,0,0,0,15,15H135a15,15,0,0,0,15-15V19Z"/>
-					</svg><b>Email</b>
+					</svg><b>LegacyEmail</b>
 				</a>
 			</div>
 		</div>`;

@@ -3,7 +3,7 @@ import ejs from 'ejs';
 import httpError from 'http-errors';
 
 import { bruteForceLimiters, rateLimiterBruteForce, __setHeader } from '../../libraries/rateLimiter';
-import { Email, PasswordToken, User, UserAuditLog } from '../../libraries/db';
+import { LegacyEmail, PasswordToken, LegacyUser, UserAuditLog } from '../../libraries/db';
 import { env, logger } from '../../globals';
 import { zxcvbn } from '@zxcvbn-ts/core';
 import { RSCrypto, RSUtils, RSTime } from 'dotcomcore/dist/RSEngine';
@@ -58,7 +58,7 @@ router.post('/', async (req, res, next) => {
 
 		const tokenData = await res.rs.client.token();
 		var tok: PasswordToken | null = null;
-		var user: User | null = null;
+		var user: LegacyUser | null = null;
 
 		if (!tokenData) {
 			if (typeof req.body.token !== 'string') return next(httpError(403, 'Unauthorized'));
@@ -67,7 +67,7 @@ router.post('/', async (req, res, next) => {
 			if (!tok) return next(httpError(403, 'Unauthorized'));
 			if (!await tok.Authorize(req.body.token)) return next(httpError(403, 'Unauthorized'));
 
-			user = await User.GetById(tok.uid);
+			user = await LegacyUser.GetById(tok.uid);
 		} else {
 			if (typeof req.body.csrf !== 'string' || typeof req.body['old-password'] !== 'string') return next(httpError(403, 'Unauthorized'));
 			if (!await tokenData.token.ValidateCSRF(req.body.csrf)) return next(httpError(403, 'Unauthorized'));
@@ -136,7 +136,7 @@ router.post('/', async (req, res, next) => {
 			);
 
 			const email = await user.GetPrimaryEmail();
-			await email.Send(Email.MailType.PASSWORD_RESET);
+			await email.Send(LegacyEmail.MailType.PASSWORD_RESET);
 		} catch (e) { logger.error(e); }
 
 		res.status(200).json({ 'code': 1, 'message': 'Password changed.' });

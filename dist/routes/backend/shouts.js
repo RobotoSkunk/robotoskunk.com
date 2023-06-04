@@ -47,7 +47,7 @@ router.get('/:user/:page', (req, res, next) => __awaiter(void 0, void 0, void 0,
             return next((0, http_errors_1.default)(400, 'Invalid page'));
         if (page < 0)
             return next((0, http_errors_1.default)(400, 'Invalid page'));
-        const victim = yield db_1.User.GetByHandler(req.params.user);
+        const victim = yield db_1.LegacyUser.GetByHandler(req.params.user);
         const _count = yield client.query('SELECT COUNT(1) FROM shouts WHERE victim = $1', [victim.id]);
         const maxPage = Math.ceil(_count.rows[0].count / 10);
         if (page > maxPage)
@@ -59,7 +59,7 @@ router.get('/:user/:page', (req, res, next) => __awaiter(void 0, void 0, void 0,
                 _g = false;
                 try {
                     const shout = _c;
-                    const author = yield db_1.User.GetById(shout.author);
+                    const author = yield db_1.LegacyUser.GetById(shout.author);
                     const editHistory = [];
                     try {
                         for (var _k = true, _l = (e_2 = void 0, __asyncValues(shout.GetEdits())), _m; _m = yield _l.next(), _d = _m.done, !_d;) {
@@ -87,7 +87,7 @@ router.get('/:user/:page', (req, res, next) => __awaiter(void 0, void 0, void 0,
                     shouts.push({
                         id: shout.id,
                         author: {
-                            name: author ? author.name : '[Deleted User]',
+                            name: author ? author.name : '[Deleted LegacyUser]',
                             handler: author ? author.handler : null
                         },
                         content: shout.content,
@@ -149,7 +149,7 @@ router.put('/:user', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const e = yield user.GetPrimaryEmail();
         if (!e.verified)
             return res.status(403).json({ 'success': false, 'message': 'You need to verify your email' });
-        const victim = yield db_1.User.GetByHandler(req.params.user);
+        const victim = yield db_1.LegacyUser.GetByHandler(req.params.user);
         const response = yield db_1.Shout.Create(user.id, victim.id, cont, (limiter) => { (0, rateLimiter_1.__setHeaderAuto)(res, limiter); });
         switch (response) {
             case db_1.Shout.Code.INTERNAL_ERROR: return next((0, http_errors_1.default)(500, 'Internal error'));
@@ -183,7 +183,7 @@ router.delete('/:user/:id', (req, res, next) => __awaiter(void 0, void 0, void 0
         const user = yield tokenData.token.GetUser();
         if (((yield user.CheckBlacklist()) & db_utils_1.Blacklist.FLAGS.BANNED) !== 0)
             return next((0, http_errors_1.default)(403, 'You are banned'));
-        const victim = yield db_1.User.GetByHandler(req.params.user);
+        const victim = yield db_1.LegacyUser.GetByHandler(req.params.user);
         const shout = yield db_1.Shout.GetById(id);
         if (!shout)
             return next((0, http_errors_1.default)(404, 'Shout not found'));
@@ -226,7 +226,7 @@ router.post('/:user/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 reason += `: ${status.reason}`;
             return res.status(403).json({ 'success': false, 'message': reason });
         }
-        const victim = yield db_1.User.GetByHandler(req.params.user);
+        const victim = yield db_1.LegacyUser.GetByHandler(req.params.user);
         const shout = yield db_1.Shout.GetById(id);
         if (!shout)
             return next((0, http_errors_1.default)(404, 'Shout not found'));

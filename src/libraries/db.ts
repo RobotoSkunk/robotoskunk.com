@@ -7,8 +7,8 @@ import { RateLimiterRes } from 'rate-limiter-flexible';
 import { Commission } from '../data/comms';
 
 import { pgConn, rtConn } from './conn';
-import { User, Email, Token, UserToken, mailer } from './db-esentials';
-export { pgConn, rtConn, User, Email, Token, UserToken, mailer };
+import { LegacyUser, LegacyEmail, Token, UserToken, mailer } from './db-esentials';
+export { pgConn, rtConn, LegacyUser, LegacyEmail, Token, UserToken, mailer };
 
 
 
@@ -35,11 +35,11 @@ export class Shout {
 	}
 	public static async Parse(content: string): Promise<string> {
 		content = content.trim();
-		content = await User.HandlerToInstance(content);
+		content = await LegacyUser.HandlerToInstance(content);
 		return content;
 	}
 	public static async Unparse(content: string): Promise<string> {
-		content = await User.InstanceToHandler(content);
+		content = await LegacyUser.InstanceToHandler(content);
 		return content;
 	}
 
@@ -62,7 +62,7 @@ export class Shout {
 			client.release();
 		}
 	}
-	public async GetAuthor(): Promise<User|null> { return await User.GetById(this.author); }
+	public async GetAuthor(): Promise<LegacyUser|null> { return await LegacyUser.GetById(this.author); }
 
 	public static async Create(author: string, victim: string, content: string, onRateLimiting: (res: RateLimiterRes) => any): Promise<Exclude<Shout.Code, 'NOT_ALLOWED' | 'MAXIMUM_EDITS'>> {
 		if (!Shout.LengthIsValid(content)) return Shout.Code.INVALID_LENGTH;

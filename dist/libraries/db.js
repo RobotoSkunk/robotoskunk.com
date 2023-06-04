@@ -24,7 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Commissions = exports.Config = exports.UserAuditLog = exports.PasswordToken = exports.Shout = exports.mailer = exports.UserToken = exports.Token = exports.Email = exports.User = exports.rtConn = exports.pgConn = void 0;
+exports.Commissions = exports.Config = exports.UserAuditLog = exports.PasswordToken = exports.Shout = exports.mailer = exports.UserToken = exports.Token = exports.LegacyEmail = exports.LegacyUser = exports.rtConn = exports.pgConn = void 0;
 const safe_stable_stringify_1 = __importDefault(require("safe-stable-stringify"));
 const globals_1 = require("../globals");
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
@@ -33,8 +33,8 @@ const conn_1 = require("./conn");
 Object.defineProperty(exports, "pgConn", { enumerable: true, get: function () { return conn_1.pgConn; } });
 Object.defineProperty(exports, "rtConn", { enumerable: true, get: function () { return conn_1.rtConn; } });
 const db_esentials_1 = require("./db-esentials");
-Object.defineProperty(exports, "User", { enumerable: true, get: function () { return db_esentials_1.User; } });
-Object.defineProperty(exports, "Email", { enumerable: true, get: function () { return db_esentials_1.Email; } });
+Object.defineProperty(exports, "LegacyUser", { enumerable: true, get: function () { return db_esentials_1.LegacyUser; } });
+Object.defineProperty(exports, "LegacyEmail", { enumerable: true, get: function () { return db_esentials_1.LegacyEmail; } });
 Object.defineProperty(exports, "Token", { enumerable: true, get: function () { return db_esentials_1.Token; } });
 Object.defineProperty(exports, "UserToken", { enumerable: true, get: function () { return db_esentials_1.UserToken; } });
 Object.defineProperty(exports, "mailer", { enumerable: true, get: function () { return db_esentials_1.mailer; } });
@@ -54,13 +54,13 @@ class Shout {
     static Parse(content) {
         return __awaiter(this, void 0, void 0, function* () {
             content = content.trim();
-            content = yield db_esentials_1.User.HandlerToInstance(content);
+            content = yield db_esentials_1.LegacyUser.HandlerToInstance(content);
             return content;
         });
     }
     static Unparse(content) {
         return __awaiter(this, void 0, void 0, function* () {
-            content = yield db_esentials_1.User.InstanceToHandler(content);
+            content = yield db_esentials_1.LegacyUser.InstanceToHandler(content);
             return content;
         });
     }
@@ -85,7 +85,7 @@ class Shout {
         });
     }
     GetAuthor() {
-        return __awaiter(this, void 0, void 0, function* () { return yield db_esentials_1.User.GetById(this.author); });
+        return __awaiter(this, void 0, void 0, function* () { return yield db_esentials_1.LegacyUser.GetById(this.author); });
     }
     static Create(author, victim, content, onRateLimiting) {
         return __awaiter(this, void 0, void 0, function* () {

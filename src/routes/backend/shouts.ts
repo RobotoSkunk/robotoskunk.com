@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../globals';
 import httpError from 'http-errors';
-import { pgConn, User, Shout } from '../../libraries/db';
+import { pgConn, LegacyUser, Shout } from '../../libraries/db';
 import { RSTime } from 'dotcomcore/dist/RSEngine';
 import { __commentLimiter, __httpError, __rateLimiter, __setHeaderAuto } from '../../libraries/rateLimiter';
 import { LangCode } from '../../libraries/lang';
@@ -33,7 +33,7 @@ router.get('/:user/:page', async (req, res, next) => {
 		if (Number.isNaN(page)) return next(httpError(400, 'Invalid page'));
 		if (page < 0) return next(httpError(400, 'Invalid page'));
 
-		const victim = await User.GetByHandler(req.params.user);
+		const victim = await LegacyUser.GetByHandler(req.params.user);
 		const _count = await client.query('SELECT COUNT(1) FROM shouts WHERE victim = $1', [ victim.id ]);
 
 		const maxPage = Math.ceil(_count.rows[0].count / 10);
@@ -42,7 +42,7 @@ router.get('/:user/:page', async (req, res, next) => {
 		const shouts = [];
 
 		for await (const shout of Shout.GetByVictim(victim.id, page)) {
-			const author = await User.GetById(shout.author);
+			const author = await LegacyUser.GetById(shout.author);
 			const editHistory = [];
 
 			for await (const edit of shout.GetEdits()) {
@@ -55,7 +55,7 @@ router.get('/:user/:page', async (req, res, next) => {
 			shouts.push({
 				id: shout.id,
 				author: {
-					name: author ? author.name : '[Deleted User]',
+					name: author ? author.name : '[Deleted LegacyUser]',
 					handler: author ? author.handler : null
 				},
 				content: shout.content,
@@ -108,7 +108,7 @@ router.put('/:user', async (req, res, next) => {
 		if (!e.verified)
 			return res.status(403).json({ 'success': false, 'message': 'You need to verify your email' });
 
-		const victim = await User.GetByHandler(req.params.user);
+		const victim = await LegacyUser.GetByHandler(req.params.user);
 
 		const response = await Shout.Create(user.id, victim.id, cont, (limiter) => { __setHeaderAuto(res, limiter); });
 
@@ -144,7 +144,7 @@ router.delete('/:user/:id', async (req, res, next) => {
 
 		const user = await tokenData.token.GetUser();
 		if ((await user.CheckBlacklist() & Blacklist.FLAGS.BANNED) !== 0) return next(httpError(403, 'You are banned'));
-		const victim = await User.GetByHandler(req.params.user);
+		const victim = await LegacyUser.GetByHandler(req.params.user);
 
 		const shout = await Shout.GetById(id);
 		if (!shout) return next(httpError(404, 'Shout not found'));
@@ -190,7 +190,7 @@ router.post('/:user/:id', async (req, res, next) => {
 			return res.status(403).json({ 'success': false, 'message': reason });
 		}
 
-		const victim = await User.GetByHandler(req.params.user);
+		const victim = await LegacyUser.GetByHandler(req.params.user);
 
 		const shout = await Shout.GetById(id);
 		if (!shout) return next(httpError(404, 'Shout not found'));

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import env from '../env';
-import { User, UserToken } from '../libraries/db';
+import { LegacyUser, UserToken } from '../libraries/db';
 import { LangCode } from '../libraries/lang';
 
 
@@ -33,7 +33,7 @@ declare global
 			/**
 			 * @deprecated Use UserToken.GetUser instead.
 			 */
-			user?: User | null;
+			user?: LegacyUser | null;
 			error?: {
 				code: string;
 				message: string;

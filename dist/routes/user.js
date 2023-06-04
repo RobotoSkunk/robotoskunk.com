@@ -25,9 +25,9 @@ router.get('/:handler', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         next((0, http_errors_1.default)(400, 'Missing handler'));
         return;
     }
-    const user = yield db_1.User.GetByHandler(handler);
+    const user = yield db_1.LegacyUser.GetByHandler(handler);
     if (!user) {
-        next((0, http_errors_1.default)(404, 'User not found'));
+        next((0, http_errors_1.default)(404, 'LegacyUser not found'));
         return;
     }
     yield user.LoadFullData();

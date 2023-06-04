@@ -20,7 +20,7 @@ import ejs from 'ejs';
 
 import express, { Request, Response } from 'express';
 import { env, PORT, phrases, logger, loggerStream } from './globals';
-import { mailer, pgConn, User, UserToken } from './libraries/db';
+import { mailer, pgConn, LegacyUser, UserToken } from './libraries/db';
 import { Blacklist, UserRoles } from './libraries/db-utils';
 
 
@@ -169,7 +169,7 @@ const app = express();
 			res.locals = Object.assign(res.rs, options.locals || {});
 
 			const tokenResponse = await res.rs.client.token();
-			var user: User;
+			var user: LegacyUser;
 			if (tokenResponse) user = res.locals.user = await tokenResponse.token.GetUser();
 
 			if (tokenResponse) {

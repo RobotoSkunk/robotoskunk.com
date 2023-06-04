@@ -39,10 +39,10 @@ exports.logger = winston_1.default.createLogger((0, logger_1.genTemplate)(path_1
     }, exports.logger, mailer_1.Mailer.Mode.Production, env_1.default.root, conn_1.pgConn, env_1.default.keys.MASTER);
     try {
         if (yield mailer.transporter.verify()) {
-            exports.logger.info('Email server is online.');
+            exports.logger.info('LegacyEmail server is online.');
         }
         else {
-            exports.logger.error('Email server does not work.');
+            exports.logger.error('LegacyEmail server does not work.');
             process.exit(1);
         }
     }

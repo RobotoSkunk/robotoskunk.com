@@ -5,7 +5,7 @@ import httpError from 'http-errors';
 import express from 'express';
 import { bruteForceLimiters, __setHeader } from '../../libraries/rateLimiter';
 import { RateLimiterRes } from 'rate-limiter-flexible';
-import { Email, UserAuditLog } from '../../libraries/db';
+import { LegacyEmail, UserAuditLog } from '../../libraries/db';
 
 const router = express.Router();
 
@@ -100,7 +100,7 @@ router.post('/', async (req, res, next) => {
 
 		const gonnaBeDeleted = Boolean(await user.GetDeleteDate());
 		if (gonnaBeDeleted) {
-			await (await user.GetPrimaryEmail()).Send(Email.MailType.ACCOUNT_DELETION);
+			await (await user.GetPrimaryEmail()).Send(LegacyEmail.MailType.ACCOUNT_DELETION);
 
 			UserAuditLog.Add(user.id, req.useragent?.source, UserAuditLog.Type.DELETE_ACCOUNT_REQUESTED, UserAuditLog.Relevance.HIGH);
 		} else {

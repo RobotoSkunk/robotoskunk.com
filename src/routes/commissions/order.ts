@@ -4,7 +4,7 @@ import ejs from 'ejs';
 
 import { Commission } from '../../data/comms';
 import { env, logger } from '../../globals';
-import { Commissions, pgConn, User } from '../../libraries/db';
+import { Commissions, pgConn, LegacyUser } from '../../libraries/db';
 import * as PayPal from '../../libraries/paypal';
 
 
@@ -29,7 +29,7 @@ router.get('/:id', async (req, res, next) => {
 				return next(httpErrors(403, 'You do not have permission to view this page'));
 
 			if (user.roles.has('OWNER')) {
-				const u = await User.GetById(comm.author);
+				const u = await LegacyUser.GetById(comm.author);
 
 				const e  = await u.GetPrimaryEmail();
 				email = await e.Read(await u.GetCryptoKey());

@@ -1,5 +1,5 @@
 import { OAuthScopes } from "./db-utils";
-import { User, pgConn } from "./db";
+import { LegacyUser, pgConn } from "./db";
 import { env, logger } from "../globals";
 import crypto from 'crypto';
 import { RSCrypto } from "dotcomcore/dist/RSEngine";

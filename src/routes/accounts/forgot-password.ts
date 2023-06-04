@@ -5,7 +5,7 @@ import httpError from 'http-errors';
 import { rateLimiterBruteForce } from '../../libraries/rateLimiter';
 import { env, logger, regex } from '../../globals';
 import { RSUtils } from 'dotcomcore/dist/RSEngine';
-import { Email } from '../../libraries/db-esentials';
+import { LegacyEmail } from '../../libraries/db-esentials';
 
 
 const router = express.Router();
@@ -49,10 +49,10 @@ router.post('/', async (req, res, next) => {
 
 		res.status(200).json({ code: 1, message: 'OK' });
 
-		const _email = await Email.Get(email);
+		const _email = await LegacyEmail.Get(email);
 		if (!_email) return;
 
-		await _email.Send(Email.MailType.PASSWORD_RESET_REQUEST);
+		await _email.Send(LegacyEmail.MailType.PASSWORD_RESET_REQUEST);
 	} catch (e) {
 		logger.error(e);
 		next(httpError(500, 'Internal server error'));

@@ -56,7 +56,7 @@ router.get('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             if (user.id !== comm.author && !user.roles.has('OWNER'))
                 return next((0, http_errors_1.default)(403, 'You do not have permission to view this page'));
             if (user.roles.has('OWNER')) {
-                const u = yield db_1.User.GetById(comm.author);
+                const u = yield db_1.LegacyUser.GetById(comm.author);
                 const e = yield u.GetPrimaryEmail();
                 email = yield e.Read(yield u.GetCryptoKey());
             }

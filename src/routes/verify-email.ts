@@ -1,7 +1,7 @@
 import express from 'express';
 import httpError from 'http-errors';
 import { logger } from '../globals';
-import { Email } from '../libraries/db';
+import { LegacyEmail } from '../libraries/db';
 import { rateLimiterBruteForce } from '../libraries/rateLimiter';
 
 const router = express.Router();
@@ -15,7 +15,7 @@ router.get('/:token', async (req, res, next) => {
 	if (req.useragent?.isBot) return next(httpError(403, 'Forbidden'));
 
 	try {
-		if (await Email.Verify(req.params.token)) return res.redirect(redirect);
+		if (await LegacyEmail.Verify(req.params.token)) return res.redirect(redirect);
 
 		next(httpError(403, 'Forbidden'));
 	} catch (e) {

@@ -121,14 +121,14 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             }
         }
         catch (_) { }
-        const response = yield db_1.User.Auth(body.email, body.password);
+        const response = yield db_1.LegacyUser.Auth(body.email, body.password);
         switch (response.code) {
-            case db_1.User.Code.INTERNAL_ERROR:
+            case db_1.LegacyUser.Code.INTERNAL_ERROR:
                 next((0, http_errors_1.default)(500, 'Something went wrong while signing in.'));
                 return;
-            // case User.Code.REQUIRE_2FA: return res.status(400).json({ 'code': Errors.REQUIRE_2FA });
-            // case User.Code.INVALID_2FA:
-            case db_1.User.Code.INVALID_EMAIL_OR_PASSWORD: {
+            // case LegacyUser.Code.REQUIRE_2FA: return res.status(400).json({ 'code': Errors.REQUIRE_2FA });
+            // case LegacyUser.Code.INVALID_2FA:
+            case db_1.LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD: {
                 try {
                     yield rateLimiter_1.bruteForceLimiters.failedAttemptsAndIP.consume(_limiterKey);
                 }
@@ -142,7 +142,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         msg = `Please try again in ${RSEngine_1.RSTime.ToString(ms)}.`;
                     }
                     try {
-                        const email = yield db_1.Email.Get(body.email);
+                        const email = yield db_1.LegacyEmail.Get(body.email);
                         if (email) {
                             yield db_1.UserAuditLog.Add(email.userId, (_b = req.useragent) === null || _b === void 0 ? void 0 : _b.source, db_1.UserAuditLog.Type.FAILED_LOGIN, db_1.UserAuditLog.Relevance.HIGH
                             // { twofa: Boolean(body.twofa) }
@@ -157,7 +157,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         'message': 'You have been locked out due to too many failed attempts. ' + msg
                     });
                 }
-                // if (response.code === User.Code.INVALID_2FA) {
+                // if (response.code === LegacyUser.Code.INVALID_2FA) {
                 // 	return res.status(403).json({
                 // 		'code': Errors.INVALID_2FA,
                 // 		'message': 'Invalid two-factor authentication code.'

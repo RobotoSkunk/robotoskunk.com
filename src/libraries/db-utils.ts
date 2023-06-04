@@ -83,7 +83,7 @@ export namespace UserRoles {
 		ADMIN:              'Admin',
 		STAFF:              'Staff',
 		VETERAN:            'Veteran',
-		VERIFIED_USER:      'Verified User',
+		VERIFIED_USER:      'Verified LegacyUser',
 		VERIFIED_DEVELOPER: 'Verified Developer',
 		BUG_HUNTER:         'Bug Hunter',
 		ALL:                'All'

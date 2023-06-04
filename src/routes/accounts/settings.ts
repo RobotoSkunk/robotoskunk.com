@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response, query } from 'express';
 import { env, logger } from '../../globals';
 import httpError from 'http-errors';
 import { RSUtils, RSRandom, RSTime, RSCrypto } from 'dotcomcore/dist/RSEngine';
-import { pgConn, UserAuditLog, User, Email, UserToken } from '../../libraries/db';
+import { pgConn, UserAuditLog, LegacyUser, LegacyEmail, UserToken } from '../../libraries/db';
 import stringify from 'safe-stable-stringify';
 import ua from 'express-useragent';
 import { bruteForceLimiters, __setHeader } from '../../libraries/rateLimiter';
@@ -24,7 +24,7 @@ async function validateRequest(req: Request, res: Response, next: NextFunction) 
 	return tokenData;
 }
 
-async function validateRequestWithAuthorization(req: Request, res: Response, next: NextFunction): Promise<{ tokenData: UserToken.Response, user: User } | void> {
+async function validateRequestWithAuthorization(req: Request, res: Response, next: NextFunction): Promise<{ tokenData: UserToken.Response, user: LegacyUser } | void> {
 	const tokenData = await validateRequest(req, res, next);
 	if (!tokenData) return;
 
@@ -67,7 +67,7 @@ async function validateRequestWithAuthorization(req: Request, res: Response, nex
 		user: user
 	};
 }
-async function validateRequestWithPassword(req: Request, res: Response, next: NextFunction): Promise<{ tokenData: UserToken.Response, user: User } | void> {
+async function validateRequestWithPassword(req: Request, res: Response, next: NextFunction): Promise<{ tokenData: UserToken.Response, user: LegacyUser } | void> {
 	const tokenData = await validateRequest(req, res, next);
 	if (!tokenData) return;
 
@@ -304,12 +304,12 @@ router.post('/profile', async (req, res, next) => {
 
 		const uid = tokenData.token.usrid;
 
-		const anotherUser = await User.GetByHandler(req.body.handler);
+		const anotherUser = await LegacyUser.GetByHandler(req.body.handler);
 		if (anotherUser && anotherUser.id !== uid) return res.status(400).json({ 'message': 'Handler is already taken.' });
 
 		if (bio.length === 0) req.body.bio = null;
 		await conn.query(`UPDATE users SET username = $1, _handler = $2, bio = $3 WHERE id = $4`, [username, handler, bio, uid]);
-		res.status(200).json({ 'message': 'User data updated successfully.' });
+		res.status(200).json({ 'message': 'LegacyUser data updated successfully.' });
 	} catch (e) {
 		logger.error(e);
 		next(httpError(500, 'Internal error.'));
@@ -502,27 +502,27 @@ router.put('/email', async (req, res, next) => {
 
 		const emailCount = await user.GetEmailsCount();
 		if (emailCount >= 5) return res.status(403).json({ 'message': 'You can\'t add more than 5 emails.' });
-		if (!await Email.Validate(email)) return res.status(403).json({ 'message': 'Please use a valid email.' });
+		if (!await LegacyEmail.Validate(email)) return res.status(403).json({ 'message': 'Please use a valid email.' });
 
 
-		const emailObj = await Email.Get(email);
+		const emailObj = await LegacyEmail.Get(email);
 		const cryptoKey = await user.GetCryptoKey();
 
 		await RSRandom.Wait(50, 100);
 
 		if (!emailObj) {
-			const _tmp = await Email.Set(email, cryptoKey, user.id, Email.Type.SECONDARY);
+			const _tmp = await LegacyEmail.Set(email, cryptoKey, user.id, LegacyEmail.Type.SECONDARY);
 			if (!_tmp) return res.status(400).json({ 'message': 'Invalid email.' });
 
 		} else {
 			if (emailObj.userId === user.id) return res.status(403).json({ 'message': 'This email is already registered to your account.' });
 
-			const _tmp = await Email.SetFake(email, cryptoKey, user.id, Email.Type.SECONDARY);
+			const _tmp = await LegacyEmail.SetFake(email, cryptoKey, user.id, LegacyEmail.Type.SECONDARY);
 			if (!_tmp) return res.status(403).json({ 'message': 'Invalid email.' });
 		}
 		UserAuditLog.Add(user.id, req.useragent?.source, UserAuditLog.Type.EMAIL_ADD, UserAuditLog.Relevance.LOW);
 
-		res.status(200).json({ 'message': 'Email added successfully.' });
+		res.status(200).json({ 'message': 'LegacyEmail added successfully.' });
 	} catch (e) {
 		logger.error(e);
 		next(httpError(500, 'Internal error.'));
@@ -548,12 +548,12 @@ router.post('/email/set', async (req, res, next) => {
 		await RSRandom.Wait(50, 100);
 
 		// #region Check if emails are valid
-		const primaryEmail = await Email.GetById(primary);
+		const primaryEmail = await LegacyEmail.GetById(primary);
 		if (!primaryEmail) return res.status(400).json({ 'message': 'Invalid primary email.' });
 		if (primaryEmail.userId !== user.id) return res.status(403).json({ 'message': 'Invalid primary email.' });
 		if (!primaryEmail.verified) return res.status(403).json({ 'message': 'Primary email is not verified.' });
 
-		const contactEmail = contact === 'none' ? null : await Email.GetById(contact);
+		const contactEmail = contact === 'none' ? null : await LegacyEmail.GetById(contact);
 
 		if (contact !== 'none') {
 			if (!contactEmail) return res.status(400).json({ 'message': 'Invalid contact email.' });	
@@ -579,7 +579,7 @@ router.post('/email/set', async (req, res, next) => {
 		else if (!_cont && contactEmail) await user.SetContactEmail(contactEmail.id);
 
 
-		res.status(200).json({ 'message': 'Email settings updated successfully.' });
+		res.status(200).json({ 'message': 'LegacyEmail settings updated successfully.' });
 	} catch (e) {
 		logger.error(e);
 		next(httpError(500, 'Internal error.'));
@@ -599,13 +599,13 @@ router.post('/email/send-verification', async (req, res, next) => {
 		const email = req.body.email;
 		if (typeof email !== 'string') return next(httpError(400, 'Invalid request.'));
 
-		const emailObj = await Email.GetById(email);
+		const emailObj = await LegacyEmail.GetById(email);
 		if (!emailObj) return res.status(400).json({ 'message': 'Invalid email.' });
 		if (emailObj.userId !== user.id) return res.status(400).json({ 'message': 'Invalid email.' });
-		if (emailObj.verified) return res.status(400).json({ 'message': 'Email already verified.' });
+		if (emailObj.verified) return res.status(400).json({ 'message': 'LegacyEmail already verified.' });
 
 		await RSRandom.Wait(50, 100);
-		await emailObj.Send(Email.MailType.VERIFY);
+		await emailObj.Send(LegacyEmail.MailType.VERIFY);
 
 		res.status(200).json({
 			'message': 'If that email exists and is not being used by another account, you will receive a verification email shortly.'
@@ -629,16 +629,16 @@ router.post('/email/delete', async (req, res, next) => {
 		const email = req.body.email;
 		if (typeof email !== 'string') return next(httpError(400, 'Invalid request.'));
 
-		const emailObj = await Email.GetById(email);
+		const emailObj = await LegacyEmail.GetById(email);
 		if (!emailObj) return res.status(400).json({ 'message': 'Invalid email.' });
 		if (emailObj.userId !== user.id) return res.status(400).json({ 'message': 'Invalid email.' });
-		if (emailObj.type === Email.Type.PRIMARY) return res.status(400).json({ 'message': 'You can\'t remove your primary email.' });
+		if (emailObj.type === LegacyEmail.Type.PRIMARY) return res.status(400).json({ 'message': 'You can\'t remove your primary email.' });
 
 		await RSRandom.Wait(50, 100);
 		await emailObj.Delete();
 		UserAuditLog.Add(user.id, req.useragent?.source, UserAuditLog.Type.EMAIL_REMOVE, UserAuditLog.Relevance.MEDIUM);
 
-		res.status(200).json({ 'message': 'Email deleted successfully.' });
+		res.status(200).json({ 'message': 'LegacyEmail deleted successfully.' });
 	} catch (e) {
 		logger.error(e);
 		next(httpError(500, 'Internal error.'));

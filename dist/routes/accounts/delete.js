@@ -100,7 +100,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         }
         const gonnaBeDeleted = Boolean(yield user.GetDeleteDate());
         if (gonnaBeDeleted) {
-            yield (yield user.GetPrimaryEmail()).Send(db_1.Email.MailType.ACCOUNT_DELETION);
+            yield (yield user.GetPrimaryEmail()).Send(db_1.LegacyEmail.MailType.ACCOUNT_DELETION);
             db_1.UserAuditLog.Add(user.id, (_a = req.useragent) === null || _a === void 0 ? void 0 : _a.source, db_1.UserAuditLog.Type.DELETE_ACCOUNT_REQUESTED, db_1.UserAuditLog.Relevance.HIGH);
         }
         else {

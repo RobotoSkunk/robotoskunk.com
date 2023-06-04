@@ -77,7 +77,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 return next((0, http_errors_1.default)(403, 'Unauthorized'));
             if (!(yield tok.Authorize(req.body.token)))
                 return next((0, http_errors_1.default)(403, 'Unauthorized'));
-            user = yield db_1.User.GetById(tok.uid);
+            user = yield db_1.LegacyUser.GetById(tok.uid);
         }
         else {
             if (typeof req.body.csrf !== 'string' || typeof req.body['old-password'] !== 'string')
@@ -133,7 +133,7 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         try {
             yield db_1.UserAuditLog.Add(user.id, (_b = req.useragent) === null || _b === void 0 ? void 0 : _b.source, db_1.UserAuditLog.Type.PASSWORD_CHANGE, db_1.UserAuditLog.Relevance.MEDIUM);
             const email = yield user.GetPrimaryEmail();
-            yield email.Send(db_1.Email.MailType.PASSWORD_RESET);
+            yield email.Send(db_1.LegacyEmail.MailType.PASSWORD_RESET);
         }
         catch (e) {
             globals_1.logger.error(e);

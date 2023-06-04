@@ -30,7 +30,7 @@ router.get('/:token', (req, res, next) => __awaiter(void 0, void 0, void 0, func
     if ((_a = req.useragent) === null || _a === void 0 ? void 0 : _a.isBot)
         return next((0, http_errors_1.default)(403, 'Forbidden'));
     try {
-        if (yield db_1.Email.Verify(req.params.token))
+        if (yield db_1.LegacyEmail.Verify(req.params.token))
             return res.redirect(redirect);
         next((0, http_errors_1.default)(403, 'Forbidden'));
     }

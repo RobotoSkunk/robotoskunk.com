@@ -65,7 +65,7 @@ class Mailer {
                     if (err)
                         return this.logger.error(err);
                     if (this.mode === Mailer.Mode.Debug)
-                        this.logger.info(`Email sent: ${nodemailer_1.default.getTestMessageUrl(info)}`);
+                        this.logger.info(`LegacyEmail sent: ${nodemailer_1.default.getTestMessageUrl(info)}`);
                 });
             }
             const conn = yield this.pg.connect();

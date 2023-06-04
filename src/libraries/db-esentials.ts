@@ -30,18 +30,18 @@ export const mailer = new Mailer({
 }, logger, env.production ? Mailer.Mode.Internal : Mailer.Mode.Debug, env.root, pgConn, env.keys.MASTER);
 
 
-export class Email {
+export class LegacyEmail {
 	public id: string;
 	public hash: string;
 	public email: string;
 	public userId: string;
-	public type: Email.Type;
+	public type: LegacyEmail.Type;
 	public verified: boolean;
 	public createdAt: Date;
 	public isFake: boolean;
 
 
-	constructor(id: string, hash: string, email: string, userId: string, type: Email.Type, verified: boolean, createdAt: Date, isFake: boolean) {
+	constructor(id: string, hash: string, email: string, userId: string, type: LegacyEmail.Type, verified: boolean, createdAt: Date, isFake: boolean) {
 		this.id = id;
 		this.hash = hash;
 		this.email = email;
@@ -53,7 +53,7 @@ export class Email {
 	}
 
 
-	static async GetById(id: string): Promise<Email | null> {
+	static async GetById(id: string): Promise<LegacyEmail | null> {
 		const client = await pgConn.connect();
 
 		try {
@@ -61,22 +61,22 @@ export class Email {
 			if (res.rowCount === 0) return null;
 			const row = res.rows[0];
 
-			return new Email(row.id, row.hash, row.email, row.usrid, row.refer, row.verified, row.created_at, row.is_fake);
+			return new LegacyEmail(row.id, row.hash, row.email, row.usrid, row.refer, row.verified, row.created_at, row.is_fake);
 		} catch (e) {
 			logger.error(e);
 		} finally {
 			client.release();
 		}
 	}
-	static async Get(email: string): Promise<Email | null> {
+	static async Get(email: string): Promise<LegacyEmail | null> {
 		const client = await pgConn.connect();
 
 		try {
-			const res = await client.query(`SELECT id FROM emails WHERE hash = $1`, [ Email.HMAC(email.toLowerCase()) ]);
+			const res = await client.query(`SELECT id FROM emails WHERE hash = $1`, [ LegacyEmail.HMAC(email.toLowerCase()) ]);
 			if (res.rowCount === 0) return null;
 			const row = res.rows[0];
 
-			return await Email.GetById(row.id);
+			return await LegacyEmail.GetById(row.id);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -88,12 +88,12 @@ export class Email {
 	 * Gets an user object attached to an email
 	 * @returns The user object
 	 */
-	async GetUser(): Promise<User|null> {
+	async GetUser(): Promise<LegacyUser|null> {
 		return new Promise(async (resolve, reject) => {
-			const u = await User.GetById(this.userId);
+			const u = await LegacyUser.GetById(this.userId);
 
 			if (u) return resolve(u);
-			reject(new Error('User not found'));
+			reject(new Error('LegacyUser not found'));
 		});
 	}
 
@@ -111,8 +111,8 @@ export class Email {
 		const [ user, domain ] = email.split('@');
 
 		// Check if user and domain are valid
-		if (Email.invalidNames.includes(user)) return false;
-		if (Email.validDomains.includes(domain)) return true;
+		if (LegacyEmail.invalidNames.includes(user)) return false;
+		if (LegacyEmail.validDomains.includes(domain)) return true;
 
 		try {
 			const readFile = util.promisify(fs.readFile);
@@ -123,7 +123,7 @@ export class Email {
 		} catch (_) { }
 
 
-		const records = await Email.LookupMX(domain);
+		const records = await LegacyEmail.LookupMX(domain);
 		if (records.length === 0) return false;
 
 		return true;
@@ -144,7 +144,7 @@ export class Email {
 		const client = await pgConn.connect();
 
 		try {
-			const res = await client.query(`SELECT id FROM emails WHERE hash = $1`, [ Email.HMAC(email.toLowerCase()) ]);
+			const res = await client.query(`SELECT id FROM emails WHERE hash = $1`, [ LegacyEmail.HMAC(email.toLowerCase()) ]);
 
 			return res.rowCount > 0;
 		} catch (e) {
@@ -156,7 +156,7 @@ export class Email {
 		return false;
 	}
 
-	public async SetType(type: Email.Type): Promise<void> {
+	public async SetType(type: LegacyEmail.Type): Promise<void> {
 		const client = await pgConn.connect();
 
 		try {
@@ -168,20 +168,20 @@ export class Email {
 		}
 	}
 
-	public static async Set(email: string, key: string, uid: string, type: Email.Type = Email.Type.PRIMARY): Promise<Email | null> {
-		const hash = Email.HMAC(email.toLowerCase());
+	public static async Set(email: string, key: string, uid: string, type: LegacyEmail.Type = LegacyEmail.Type.PRIMARY): Promise<LegacyEmail | null> {
+		const hash = LegacyEmail.HMAC(email.toLowerCase());
 		const enc = await RSCrypto.Encrypt(email.toLowerCase(), key);
 
 		const client = await pgConn.connect();
 
 		try {
-			if (!await User.Exists(uid)) return null;
-			if (await Email.Exists(email)) return null;
+			if (!await LegacyUser.Exists(uid)) return null;
+			if (await LegacyEmail.Exists(email)) return null;
 
 			const res = await client.query('INSERT INTO emails (hash, email, usrid, refer) VALUES ($1, $2, $3, $4) RETURNING id', [ hash, enc, uid, type ]);
 			if (res.rowCount === 0) return null;
 
-			return Email.GetById(res.rows[0].id);
+			return LegacyEmail.GetById(res.rows[0].id);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -190,14 +190,14 @@ export class Email {
 
 		return null;
 	}
-	public static async SetFake(email: string, key: string, uid: string, type: Email.Type = Email.Type.PRIMARY): Promise<boolean> {
-		const hash = Email.HMAC(RSCrypto.RandomBytes(32));
+	public static async SetFake(email: string, key: string, uid: string, type: LegacyEmail.Type = LegacyEmail.Type.PRIMARY): Promise<boolean> {
+		const hash = LegacyEmail.HMAC(RSCrypto.RandomBytes(32));
 		const enc = await RSCrypto.Encrypt(email.toLowerCase(), key);
 
 		const client = await pgConn.connect();
 
 		try {
-			if (!await User.Exists(uid)) return false;
+			if (!await LegacyUser.Exists(uid)) return false;
 
 			await client.query('INSERT INTO emails (hash, email, usrid, refer, is_fake) VALUES ($1, $2, $3, $4, true)', [ hash, enc, uid, type ]);
 			return true;
@@ -227,7 +227,7 @@ export class Email {
 		return null;
 	}
 
-	public async Send(type: Email.MailType, ...args: string[]) {
+	public async Send(type: LegacyEmail.MailType, ...args: string[]) {
 		if (this.isFake) return await RSRandom.Wait(50, 150);
 		const conn = await pgConn.connect();
 
@@ -239,7 +239,7 @@ export class Email {
 			var body: string, subject: string;
 
 			switch (type) {
-				case Email.MailType.NEW_USER: {
+				case LegacyEmail.MailType.NEW_USER: {
 					const id = RSCrypto.RandomBytes(16);
 					const validator = RSCrypto.RandomBytes(32);
 					const valHash = RSCrypto.HMAC(validator, env.keys.HMAC);
@@ -255,7 +255,7 @@ export class Email {
 						<p>If it wasn't you, you can safely ignore this email. If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
 					break;
 				}
-				case Email.MailType.VERIFY: {
+				case LegacyEmail.MailType.VERIFY: {
 					if (this.verified) return;
 
 					var token: string;
@@ -286,8 +286,8 @@ export class Email {
 						<p>If it wasn't you, you can safely ignore this email. If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
 					break;
 				}
-				case Email.MailType.PASSWORD_RESET_REQUEST: {
-					if (!this.verified || this.type !== Email.Type.PRIMARY) return;
+				case LegacyEmail.MailType.PASSWORD_RESET_REQUEST: {
+					if (!this.verified || this.type !== LegacyEmail.Type.PRIMARY) return;
 
 					var token: string;
 
@@ -318,7 +318,7 @@ export class Email {
 						<p>If you have any questions, please contact us at <a href="${contactLink}">${contactLink}</a>.`;
 					break;
 				}
-				case Email.MailType.PASSWORD_RESET: {
+				case LegacyEmail.MailType.PASSWORD_RESET: {
 					subject = 'Your password has been reset';
 					body = `<h2>Your password has been reset.</h2>
 						<p>Your password has been reset. If you did request this, you can now log in with your new password.
@@ -326,7 +326,7 @@ export class Email {
 						<p>If you did not request this, please contact us at <a href="${contactLink}">${contactLink}</a> immediately.`;
 					break;
 				}
-				case Email.MailType.ACCOUNT_DELETION: {
+				case LegacyEmail.MailType.ACCOUNT_DELETION: {
 					subject = 'Someone has requested to delete your account';
 					body = `<h2>Someone has requested to delete your account.</h2>
 						<p>Someone has requested to delete your account. If it was you, you shouldn't need to do anything. Your account will be deleted in 7 days.
@@ -353,7 +353,7 @@ export class Email {
 		const conn = await pgConn.connect();
 
 		try {
-			if (this.type === Email.Type.PRIMARY) return false;
+			if (this.type === LegacyEmail.Type.PRIMARY) return false;
 
 			await conn.query('DELETE FROM emails WHERE hash = $1', [ this.hash ]);
 			return true;
@@ -393,7 +393,7 @@ export class Email {
 		return false;
 	}
 }
-export namespace Email {
+export namespace LegacyEmail {
 	export enum Type {
 		PRIMARY = 0,
 		CONTACT = 1,
@@ -482,7 +482,7 @@ export class UserToken extends Token {
 		this.verified = verified;
 	}
 
-	public async GetUser(): Promise<User> { return await User.GetById(this.usrid); }
+	public async GetUser(): Promise<LegacyUser> { return await LegacyUser.GetById(this.usrid); }
 
 	public static async Set(uid: string, remember: boolean, useragent: string, verified: boolean): Promise<UserToken.Response | null> {
 		const client = await pgConn.connect();
@@ -724,7 +724,7 @@ export namespace UserToken {
 
 
 
-export class User {
+export class LegacyUser {
 	public id: string;
 	public hash: string;
 	public name: string;
@@ -755,33 +755,33 @@ export class User {
 		return await RSCrypto.PBKDF2(env.keys.MASTER, hash, 1000, 32);
 	}
 	public async GetCryptoKey(): Promise<string> {
-		return await User.GenerateCryptoKey(this.hash);
+		return await LegacyUser.GenerateCryptoKey(this.hash);
 	}
 	// #endregion
 
-	// #region User management
-	static async Auth(email: string, password: string): Promise<User.Response> {
-		const response: User.Response = { code: User.Code.INTERNAL_ERROR }
+	// #region LegacyUser management
+	static async Auth(email: string, password: string): Promise<LegacyUser.Response> {
+		const response: LegacyUser.Response = { code: LegacyUser.Code.INTERNAL_ERROR }
 		const client = await pgConn.connect();
 
 		await RSRandom.Wait(0, 150);
 
 		try {
-			const emailObj = await Email.Get(email);
-			if (!emailObj) { response.code = User.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
-			if (emailObj.type != Email.Type.PRIMARY) { response.code = User.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
+			const emailObj = await LegacyEmail.Get(email);
+			if (!emailObj) { response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
+			if (emailObj.type != LegacyEmail.Type.PRIMARY) { response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
 
 			const res = await client.query('SELECT id, password, totp_secret, totp_enabled FROM users WHERE id = $1', [ emailObj.userId ]);
 			const passHash = res.rows[0].password as string;
 
 			if (passHash.startsWith('$2')) {
-				if (!(await bcrypt.compare(password, passHash))) { response.code = User.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
+				if (!(await bcrypt.compare(password, passHash))) { response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
 
 				const newPass = await argon2.hash(password);
 				await client.query('UPDATE users SET password = $1 WHERE id = $2', [ newPass, emailObj.userId ]);
 
 			} else {
-				if (!(await argon2.verify(passHash, password))) { response.code = User.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
+				if (!(await argon2.verify(passHash, password))) { response.code = LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD; return response; }
 
 				if (argon2.needsRehash(passHash)) {
 					const newPass = await argon2.hash(password);
@@ -790,8 +790,8 @@ export class User {
 			}
 
 
-			response.code = User.Code.SUCCESS;
-			response.user = await User.GetById(res.rows[0].id);
+			response.code = LegacyUser.Code.SUCCESS;
+			response.user = await LegacyUser.GetById(res.rows[0].id);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -800,13 +800,13 @@ export class User {
 
 		return response;
 	}
-	public static async Set(username: string, email: string, password: string, birthdate: Date): Promise<User.Code> {
-		const response = User.Code.INTERNAL_ERROR;
+	public static async Set(username: string, email: string, password: string, birthdate: Date): Promise<LegacyUser.Code> {
+		const response = LegacyUser.Code.INTERNAL_ERROR;
 		const client = await pgConn.connect();
 
 		try {
-			if (!RSTime.MinimumAge(birthdate)) return User.Code.MINOR;
-			if (await User.ExistsByHandler(username)) return User.Code.ALREADY_EXISTS;
+			if (!RSTime.MinimumAge(birthdate)) return LegacyUser.Code.MINOR;
+			if (await LegacyUser.ExistsByHandler(username)) return LegacyUser.Code.ALREADY_EXISTS;
 
 
 			const hash = crypto.randomBytes(32).toString('hex');
@@ -814,12 +814,12 @@ export class User {
 
 			const res = await client.query('INSERT INTO users (hash, username, _handler, password, birthdate) VALUES ($1, $2, $3, $4, $5) RETURNING id', [ hash, username, username, pwrd, birthdate ]);
 
-			const _email = await Email.Set(email, await User.GenerateCryptoKey(hash), res.rows[0].id as string);
-			if (!_email) return User.Code.INTERNAL_ERROR;
+			const _email = await LegacyEmail.Set(email, await LegacyUser.GenerateCryptoKey(hash), res.rows[0].id as string);
+			if (!_email) return LegacyUser.Code.INTERNAL_ERROR;
 
-			_email.Send(Email.MailType.NEW_USER);
+			_email.Send(LegacyEmail.MailType.NEW_USER);
 
-			return User.Code.SUCCESS;
+			return LegacyUser.Code.SUCCESS;
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -830,7 +830,7 @@ export class User {
 	}
 
 
-	static async GetById(uid: string): Promise<User|null> {
+	static async GetById(uid: string): Promise<LegacyUser|null> {
 		const client = await pgConn.connect();
 
 		try {
@@ -839,7 +839,7 @@ export class User {
 			const user = res.rows[0];
 
 
-			return new User(user.id, user.hash, user.username, user._handler, user.birthdate, new UserRoles(user.roles));
+			return new LegacyUser(user.id, user.hash, user.username, user._handler, user.birthdate, new UserRoles(user.roles));
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -848,14 +848,14 @@ export class User {
 
 		return null;
 	}
-	static async GetByHandler(handler: string): Promise<User|null> {
+	static async GetByHandler(handler: string): Promise<LegacyUser|null> {
 		const client = await pgConn.connect();
 
 		try {
 			const res = await client.query('SELECT id FROM users WHERE LOWER(_handler) = LOWER($1)', [ handler ]);
 			if (res.rowCount === 0) return null;
 
-			return await User.GetById(res.rows[0].id);
+			return await LegacyUser.GetById(res.rows[0].id);
 		} catch(e) {
 			logger.error(e);
 		} finally {
@@ -961,13 +961,13 @@ export class User {
 		}
 	}
 
-	async *GetEmails(): AsyncGenerator<Email> {
+	async *GetEmails(): AsyncGenerator<LegacyEmail> {
 		const client = await pgConn.connect();
 
 		try {
 			const res = await client.query('SELECT id FROM emails WHERE usrid = $1 ORDER BY refer ASC', [ this.id ]);
 
-			for (const row of res.rows) yield await Email.GetById(row.id);
+			for (const row of res.rows) yield await LegacyEmail.GetById(row.id);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -997,8 +997,8 @@ export class User {
 		const client = await pgConn.connect();
 
 		try {
-			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ Email.Type.SECONDARY, this.id, Email.Type.PRIMARY ]);
-			await client.query('UPDATE emails SET refer = $1 WHERE id = $2', [ Email.Type.PRIMARY, id ]);
+			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.PRIMARY ]);
+			await client.query('UPDATE emails SET refer = $1 WHERE id = $2', [ LegacyEmail.Type.PRIMARY, id ]);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1009,8 +1009,8 @@ export class User {
 		const client = await pgConn.connect();
 
 		try {
-			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ Email.Type.SECONDARY, this.id, Email.Type.CONTACT ]);
-			await client.query('UPDATE emails SET refer = $1 WHERE id = $2', [ Email.Type.CONTACT, id ]);
+			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.CONTACT ]);
+			await client.query('UPDATE emails SET refer = $1 WHERE id = $2', [ LegacyEmail.Type.CONTACT, id ]);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1021,7 +1021,7 @@ export class User {
 		const client = await pgConn.connect();
 
 		try {
-			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ Email.Type.SECONDARY, this.id, Email.Type.CONTACT ]);
+			await client.query('UPDATE emails SET refer = $1 WHERE usrid = $2 AND refer = $3', [ LegacyEmail.Type.SECONDARY, this.id, LegacyEmail.Type.CONTACT ]);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1029,12 +1029,12 @@ export class User {
 		}
 	}
 
-	async GetPrimaryEmail(): Promise<Email> {
+	async GetPrimaryEmail(): Promise<LegacyEmail> {
 		const client = await pgConn.connect();
 
 		try {
-			const res = await client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [ this.id, Email.Type.PRIMARY ]);
-			return await Email.GetById(res.rows[0].id);
+			const res = await client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [ this.id, LegacyEmail.Type.PRIMARY ]);
+			return await LegacyEmail.GetById(res.rows[0].id);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1044,12 +1044,12 @@ export class User {
 		return null;
 	}
 
-	async GetContactEmail(): Promise<Email|null> {
+	async GetContactEmail(): Promise<LegacyEmail|null> {
 		const client = await pgConn.connect();
 
 		try {
-			const res = await client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [ this.id, Email.Type.CONTACT ]);
-			if (res.rowCount > 0) return await Email.GetById(res.rows[0].id);
+			const res = await client.query('SELECT id FROM emails WHERE usrid = $1 AND refer = $2', [ this.id, LegacyEmail.Type.CONTACT ]);
+			if (res.rowCount > 0) return await LegacyEmail.GetById(res.rows[0].id);
 
 			return null;
 		} catch (e) {
@@ -1278,9 +1278,9 @@ export class User {
 	// #endregion
 
 
-	// #region User interactions
+	// #region LegacyUser interactions
 	//  #region Following
-	public async AddFollow(user: User): Promise<boolean> {
+	public async AddFollow(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1299,7 +1299,7 @@ export class User {
 		return false;
 	}
 
-	public async RemoveFollow(user: User): Promise<boolean> {
+	public async RemoveFollow(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1317,7 +1317,7 @@ export class User {
 		return false;
 	}
 
-	public async IsFollowing(user: User): Promise<boolean> {
+	public async IsFollowing(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1333,13 +1333,13 @@ export class User {
 		return false;
 	}
 
-	public async *GetFollowing(): AsyncGenerator<User> {
+	public async *GetFollowing(): AsyncGenerator<LegacyUser> {
 		const client = await pgConn.connect();
 
 		try {
 			const res = await client.query('SELECT author FROM follow_list WHERE victim = $1', [ this.id ]);
 
-			for (const row of res.rows) yield await User.GetById(row.author);
+			for (const row of res.rows) yield await LegacyUser.GetById(row.author);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1364,7 +1364,7 @@ export class User {
 	//  #endregion
 
 	//  #region Blocked
-	public async HasBlocked(user: User): Promise<boolean> {
+	public async HasBlocked(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1380,7 +1380,7 @@ export class User {
 		return false;
 	}
 
-	public async BlockUser(user: User): Promise<boolean> {
+	public async BlockUser(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1399,7 +1399,7 @@ export class User {
 		return false;
 	}
 
-	public async UnblockUser(user: User): Promise<boolean> {
+	public async UnblockUser(user: LegacyUser): Promise<boolean> {
 		const client = await pgConn.connect();
 
 		try {
@@ -1417,13 +1417,13 @@ export class User {
 		return false;
 	}
 
-	public async *GetBlocked(): AsyncGenerator<User> {
+	public async *GetBlocked(): AsyncGenerator<LegacyUser> {
 		const client = await pgConn.connect();
 
 		try {
 			const res = await client.query('SELECT victim FROM block_list WHERE author = $1', [ this.id ]);
 
-			for (const row of res.rows) yield await User.GetById(row.victim);
+			for (const row of res.rows) yield await LegacyUser.GetById(row.victim);
 		} catch (e) {
 			logger.error(e);
 		} finally {
@@ -1453,7 +1453,7 @@ export class User {
 
 		if (mentions) {
 			for (const mention of mentions) {
-				const user = await User.GetByHandler(mention.slice(1));
+				const user = await LegacyUser.GetByHandler(mention.slice(1));
 				if (user) msg = msg.replace(mention, `<@${user.id}>`);
 				else msg = msg.replace(mention, `\\@${mention.slice(1)}`);
 			}
@@ -1468,7 +1468,7 @@ export class User {
 
 		if (mentions) {
 			for (const mention of mentions) {
-				const user = await User.GetById(mention.slice(2, -1));
+				const user = await LegacyUser.GetById(mention.slice(2, -1));
 				if (user) msg = msg.replace(mention, `@${user.handler}`);
 				else msg = msg.replace(mention, '\\@deleted-user');
 			}
@@ -1499,7 +1499,7 @@ export class User {
 		}
 	}
 }
-export namespace User {
+export namespace LegacyUser {
 	export enum Code {
 		SUCCESS =                   0,
 		INTERNAL_ERROR =            1 << 0,
@@ -1512,6 +1512,6 @@ export namespace User {
 
 	export interface Response {
 		code: Code;
-		user?: User;
+		user?: LegacyUser;
 	}
 }

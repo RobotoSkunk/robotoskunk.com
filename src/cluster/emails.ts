@@ -24,7 +24,7 @@ export const logger = winston.createLogger(
 
 
 
-interface Email {
+interface LegacyEmail {
 	id: string;
 	hash: string;
 	_to: string;
@@ -56,9 +56,9 @@ interface Email {
 
 	try {
 		if (await mailer.transporter.verify()) {
-			logger.info('Email server is online.');
+			logger.info('LegacyEmail server is online.');
 		} else {
-			logger.error('Email server does not work.');
+			logger.error('LegacyEmail server does not work.');
 			process.exit(1);
 		}
 	} catch (e) {
@@ -79,7 +79,7 @@ interface Email {
 				continue;
 			}
 	
-			const row: Email = rows[0];
+			const row: LegacyEmail = rows[0];
 	
 			try {
 				const key = await mailer.GenerateCryptoKey(row.hash);

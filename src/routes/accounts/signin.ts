@@ -1,7 +1,7 @@
 import express from 'express';
 import { env, logger, regex } from '../../globals';
 import { RSRandom, RSUtils, RSCrypto, RSTime } from 'dotcomcore/dist/RSEngine';
-import { Email, User, UserAuditLog, UserToken } from '../../libraries/db';
+import { LegacyEmail, LegacyUser, UserAuditLog, UserToken } from '../../libraries/db';
 import httpError from 'http-errors';
 import { Schema, SignInBody, SignInSchema } from '../../libraries/schema';
 import { bruteForceLimiters, rateLimiterBruteForce, __httpError, __setHeader } from '../../libraries/rateLimiter';
@@ -128,14 +128,14 @@ router.post('/', async (req, res, next) => {
 
 		} catch (_) { }
 
-		const response = await User.Auth(body.email, body.password);
+		const response = await LegacyUser.Auth(body.email, body.password);
 
 		switch (response.code) {
-			case User.Code.INTERNAL_ERROR: next(httpError(500, 'Something went wrong while signing in.')); return;
-			// case User.Code.REQUIRE_2FA: return res.status(400).json({ 'code': Errors.REQUIRE_2FA });
+			case LegacyUser.Code.INTERNAL_ERROR: next(httpError(500, 'Something went wrong while signing in.')); return;
+			// case LegacyUser.Code.REQUIRE_2FA: return res.status(400).json({ 'code': Errors.REQUIRE_2FA });
 
-			// case User.Code.INVALID_2FA:
-			case User.Code.INVALID_EMAIL_OR_PASSWORD: {
+			// case LegacyUser.Code.INVALID_2FA:
+			case LegacyUser.Code.INVALID_EMAIL_OR_PASSWORD: {
 				try {
 					await bruteForceLimiters.failedAttemptsAndIP.consume(_limiterKey);
 				} catch (e) {
@@ -149,7 +149,7 @@ router.post('/', async (req, res, next) => {
 					}
 
 					try {
-						const email = await Email.Get(body.email);
+						const email = await LegacyEmail.Get(body.email);
 
 						if (email) {
 							await UserAuditLog.Add(
@@ -168,7 +168,7 @@ router.post('/', async (req, res, next) => {
 					});
 				}
 
-				// if (response.code === User.Code.INVALID_2FA) {
+				// if (response.code === LegacyUser.Code.INVALID_2FA) {
 				// 	return res.status(403).json({
 				// 		'code': Errors.INVALID_2FA,
 				// 		'message': 'Invalid two-factor authentication code.'

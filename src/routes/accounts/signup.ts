@@ -1,7 +1,7 @@
 import express from 'express';
 import { env, logger, regex } from '../../globals';
 import { RSRandom, RSTime, RSUtils } from 'dotcomcore/dist/RSEngine';
-import { Email, pgConn, User } from '../../libraries/db';
+import { LegacyEmail, pgConn, LegacyUser } from '../../libraries/db';
 import httpError from 'http-errors';
 import { Schema, SignUpBody, SignUpSchema } from '../../libraries/schema';
 import { zxcvbn } from '../../libraries/zxcvbn';
@@ -141,7 +141,7 @@ router.post('/', async (req, res, next) => {
 				'message': 'Username must be between 3 and 16 characters.'
 			});
 		}
-		if (await User.ExistsByHandler(body.username)) {
+		if (await LegacyUser.ExistsByHandler(body.username)) {
 			return res.status(400).json({
 				'code': Errors.INVALID_USERNAME,
 				'message': 'Username is already taken.'
@@ -153,7 +153,7 @@ router.post('/', async (req, res, next) => {
 				'message': 'Password is too weak.'
 			});
 		}
-		if (!await Email.Validate(body.email)) {
+		if (!await LegacyEmail.Validate(body.email)) {
 			return res.status(400).json({
 				'code': Errors.INVALID_EMAIL,
 				'message': 'Invalid email.'
@@ -164,18 +164,18 @@ router.post('/', async (req, res, next) => {
 
 		await RSRandom.Wait(0, 150);
 
-		if (!await Email.Exists(body.email)) {
-			const response = await User.Set(body.username, body.email, body.password, bday);
+		if (!await LegacyEmail.Exists(body.email)) {
+			const response = await LegacyUser.Set(body.username, body.email, body.password, bday);
 
-			if (response === User.Code.INTERNAL_ERROR) return next(httpError(500, 'Something went wrong while signing up.'));
+			if (response === LegacyUser.Code.INTERNAL_ERROR) return next(httpError(500, 'Something went wrong while signing up.'));
 
-			if (response === User.Code.ALREADY_EXISTS) {
+			if (response === LegacyUser.Code.ALREADY_EXISTS) {
 				return res.status(403).json({
 					'code': Errors.INVALID_USERNAME,
 					'message': 'Username is already taken.'
 				});
 			}
-			if (response === User.Code.MINOR) {
+			if (response === LegacyUser.Code.MINOR) {
 				return res.status(403).json({
 					'code': Errors.INVALID_BIRTHDATE,
 					'message': 'You must be at least 8 years old.'

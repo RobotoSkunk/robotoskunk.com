@@ -1,5 +1,5 @@
 import express from 'express';
-import { User } from '../libraries/db';
+import { LegacyUser } from '../libraries/db';
 import { RSCrypto, RSUtils } from 'dotcomcore/dist/RSEngine';
 import httpError from 'http-errors';
 
@@ -19,10 +19,10 @@ router.get('/:handler', async (req, res, next) => {
 		return;
 	}
 
-	const user = await User.GetByHandler(handler);
+	const user = await LegacyUser.GetByHandler(handler);
 
 	if (!user) {
-		next(httpError(404, 'User not found'));
+		next(httpError(404, 'LegacyUser not found'));
 		return;
 	}
 	await user.LoadFullData();

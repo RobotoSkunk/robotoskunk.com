@@ -58,10 +58,10 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         if (!globals_1.regex.email.test(email))
             return res.status(400).json({ code: 0, message: 'Invalid email address.' });
         res.status(200).json({ code: 1, message: 'OK' });
-        const _email = yield db_esentials_1.Email.Get(email);
+        const _email = yield db_esentials_1.LegacyEmail.Get(email);
         if (!_email)
             return;
-        yield _email.Send(db_esentials_1.Email.MailType.PASSWORD_RESET_REQUEST);
+        yield _email.Send(db_esentials_1.LegacyEmail.MailType.PASSWORD_RESET_REQUEST);
     }
     catch (e) {
         globals_1.logger.error(e);
