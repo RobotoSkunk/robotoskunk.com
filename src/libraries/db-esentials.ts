@@ -49,6 +49,9 @@ export const mailer = new Mailer({
 }, logger, env.production ? Mailer.Mode.Internal : Mailer.Mode.Debug, env.root, pgConn, env.keys.MASTER);
 
 
+/**
+ * @deprecated Use Email instead.
+ */
 export class LegacyEmail {
 	public id: string;
 	public hash: string;
@@ -743,6 +746,9 @@ export namespace UserToken {
 
 
 
+/**
+ * @deprecated Use User instead.
+ */
 export class LegacyUser {
 	public id: string;
 	public hash: string;

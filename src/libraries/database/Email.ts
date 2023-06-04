@@ -17,7 +17,9 @@
 */
 
 
-import DotComCore from 'dotcomcore';
+import DotComCore, { IEmail } from 'dotcomcore';
+import { RSCrypto } from 'dotcomcore/dist/RSEngine';
+import { User } from './User';
 
 
 const DotComEmail = DotComCore.Email;
@@ -25,5 +27,92 @@ const DotComEmail = DotComCore.Email;
 
 export class Email extends DotComEmail
 {
-	
+	constructor(email: IEmail)
+	{
+		super(email);
+	}
+
+	/**
+	 * Creates a new email address in the database.
+	 * @param email The email address to add.
+	 * @param type The type of email address.
+	 * @param userId The user ID to associate the email address with, if any.
+	 * @returns A promise that resolves when the email address has been added.
+	 */
+	public static async Set(email: string, type: Email.Type = Email.Type.PRIMARY, userId?: string): Promise<void>
+	{
+		const client = await DotComCore.Core.Connect();
+
+		try {
+			const hash = await super._HMAC(email);
+			var encryptedEmail: string;
+
+			// If the user doesn't exist, use the main encryption key.
+			if (!userId) {
+				const encryptionKey = await RSCrypto.PBKDF2(DotComCore.Core.encryptionKey, hash, 1000, 32);
+				encryptedEmail = await RSCrypto.Encrypt(email, encryptionKey);
+
+			} else {
+				// Otherwise, use the user's encryption key.
+
+				const user = await User.GetById(userId);
+				encryptedEmail = await RSCrypto.Encrypt(email, await user.GetCryptoKey());
+			}
+
+
+			await client.query(`INSERT INTO emails (hash, email, usrid, refer) VALUES ($1, $2, $3, $4)`, [
+				hash,
+				encryptedEmail,
+				userId || null,
+				type
+			]);
+
+			return;
+		} catch (e) {
+			throw e;
+		} finally {
+			client.release();
+		}
+	}
+
+	/**
+	 * Deletes the email address from the database.
+	 */
+	public async Delete(): Promise<void>
+	{
+		const client = await DotComCore.Core.Connect();
+
+		try {
+			await client.query(`DELETE FROM emails WHERE id = $1`, [ this.id ]);
+			return;
+		} catch (e) {
+			throw e;
+		} finally {
+			client.release();
+		}
+	}
+
+
+	// #region Methods to prevent stupid TypeScript errors.
+	public static async GetById(id: string)
+	{
+		const email = await super.GetById(id);
+		return email ? new Email(email) : null;
+	}
+
+	public static async Get(email: string): Promise<Email>
+	{
+		const emailObj = await super.Get(email);
+		return emailObj ? new Email(emailObj) : null;
+	}
+	// #endregion
+}
+
+export namespace Email
+{
+	export enum Type {
+		PRIMARY,
+		CONTACT,
+		SECONDARY,
+	}
 }

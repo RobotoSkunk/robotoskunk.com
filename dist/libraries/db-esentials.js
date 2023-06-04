@@ -66,6 +66,9 @@ exports.mailer = new mailer_1.Mailer({
         pass: globals_1.env.emails.noreply.auth.pass
     }
 }, globals_1.logger, globals_1.env.production ? mailer_1.Mailer.Mode.Internal : mailer_1.Mailer.Mode.Debug, globals_1.env.root, conn_1.pgConn, globals_1.env.keys.MASTER);
+/**
+ * @deprecated Use Email instead.
+ */
 class LegacyEmail {
     constructor(id, hash, email, userId, type, verified, createdAt, isFake) {
         this.id = id;
@@ -713,6 +716,9 @@ class UserToken extends Token {
     }
 }
 exports.UserToken = UserToken;
+/**
+ * @deprecated Use User instead.
+ */
 class LegacyUser {
     constructor(id, hash, name, handler, birthdate, roles) {
         this.id = id;
