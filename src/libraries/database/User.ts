@@ -31,11 +31,12 @@ export class User extends DotComUser
 	/**
 	 * Creates a new user in the database.
 	 * @param username The name of the new user.
+	 * @param emailId The email ID of the new user.
 	 * @param password The password of the new user.
 	 * @param birthdate The birthdate of the new user.
 	 * @returns A promise that resolves to a code that indicates the result of the operation.
 	 */
-	public static async Set(username: string, password: string, birthdate: Date): Promise<User.SignUpCode>
+	public static async Set(username: string, emailId: string, password: string, birthdate: Date): Promise<User.SignUpCode>
 	{
 		const client = await DotComCore.Core.Connect();
 
@@ -47,9 +48,9 @@ export class User extends DotComUser
 			const hash = crypto.randomBytes(32).toString('hex');
 			const pwrd = await argon2.hash(password);
 
-			await client.query(`INSERT INTO
+			const query = await client.query(`INSERT INTO
 				users (hash, username, _handler, password, birthdate)
-				VALUES ($1, $2, $3, $4, $5)`,
+				VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 				[
 					hash,
 					username,
@@ -58,6 +59,11 @@ export class User extends DotComUser
 					birthdate
 				]
 			);
+
+			await client.query(`UPDATE emails SET usrid = $1 WHERE id = $2`, [
+				query.rows[0].id,
+				emailId
+			]);
 
 			return User.SignUpCode.SUCCESS;
 		} catch (e) {

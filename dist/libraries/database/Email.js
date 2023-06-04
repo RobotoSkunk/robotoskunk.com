@@ -35,9 +35,29 @@ const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const User_1 = require("./User");
 const DotComEmail = dotcomcore_1.default.Email;
 class Email extends DotComEmail {
+    // #region Methods to prevent stupid TypeScript errors.
     constructor(email) {
         super(email);
     }
+    static GetById(id) {
+        const _super = Object.create(null, {
+            GetById: { get: () => super.GetById }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const email = yield _super.GetById.call(this, id);
+            return email ? new Email(email) : null;
+        });
+    }
+    static Get(email) {
+        const _super = Object.create(null, {
+            Get: { get: () => super.Get }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            const emailObj = yield _super.Get.call(this, email);
+            return emailObj ? new Email(emailObj) : null;
+        });
+    }
+    // #endregion
     /**
      * Creates a new email address in the database.
      * @param email The email address to add.
@@ -96,25 +116,6 @@ class Email extends DotComEmail {
             finally {
                 client.release();
             }
-        });
-    }
-    // #region Methods to prevent stupid TypeScript errors.
-    static GetById(id) {
-        const _super = Object.create(null, {
-            GetById: { get: () => super.GetById }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const email = yield _super.GetById.call(this, id);
-            return email ? new Email(email) : null;
-        });
-    }
-    static Get(email) {
-        const _super = Object.create(null, {
-            Get: { get: () => super.Get }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const emailObj = yield _super.Get.call(this, email);
-            return emailObj ? new Email(emailObj) : null;
         });
     }
 }

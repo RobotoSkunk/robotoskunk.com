@@ -39,11 +39,12 @@ class User extends DotComUser {
     /**
      * Creates a new user in the database.
      * @param username The name of the new user.
+     * @param emailId The email ID of the new user.
      * @param password The password of the new user.
      * @param birthdate The birthdate of the new user.
      * @returns A promise that resolves to a code that indicates the result of the operation.
      */
-    static Set(username, password, birthdate) {
+    static Set(username, emailId, password, birthdate) {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield dotcomcore_1.default.Core.Connect();
             try {
@@ -53,14 +54,18 @@ class User extends DotComUser {
                     return User.SignUpCode.ALREADY_EXISTS;
                 const hash = crypto_1.default.randomBytes(32).toString('hex');
                 const pwrd = yield argon2_1.default.hash(password);
-                yield client.query(`INSERT INTO
+                const query = yield client.query(`INSERT INTO
 				users (hash, username, _handler, password, birthdate)
-				VALUES ($1, $2, $3, $4, $5)`, [
+				VALUES ($1, $2, $3, $4, $5) RETURNING id`, [
                     hash,
                     username,
                     username,
                     pwrd,
                     birthdate
+                ]);
+                yield client.query(`UPDATE emails SET usrid = $1 WHERE id = $2`, [
+                    query.rows[0].id,
+                    emailId
                 ]);
                 return User.SignUpCode.SUCCESS;
             }

@@ -66,7 +66,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         const min = new Date();
         min.setFullYear(today.getFullYear() - 130);
         max.setFullYear(today.getFullYear() - 13);
-        res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signup.ejs'), {
+        res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signup-first-step.ejs'), {
             key: globals_1.env.hcaptcha_keys.site_key,
             min: min.toISOString().split('T')[0],
             max: max.toISOString().split('T')[0]

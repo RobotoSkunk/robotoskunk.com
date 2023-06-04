@@ -1,0 +1,24 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"outDir": "../static-http/resources/js",
+		"target": "ES6",
+		"lib": [
+			"ES5",
+			"ES6",
+			"DOM"
+		],
+		"allowJs": true,
+		"module": "CommonJS",
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"downlevelIteration": true
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.js"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

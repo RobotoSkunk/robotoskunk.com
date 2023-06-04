@@ -17,6 +17,7 @@
 		along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	*/
 -%>
+<!-- Username and birthdate section -->
 <div class="section" data-height="350">
 	<h1>Sign Up</h1>
 	<span class="error"></span>
@@ -24,14 +25,15 @@
 		<div class="handler-at">@</div>
 		<input type="text" name="username" id="username" placeholder="Username" required>
 	</div>
-	<input type="email" name="email" placeholder="Email" required>
+	<input type="email" placeholder="Email" readonly aria-readonly="true" value="<%= email %>">
 	<input type="date" name="birthdate" placeholder="birthdate" min="<%= min %>" max="<%= max %>" required>
 
-	<p class="small">By signing up, you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</p>
 	<button class="submit" id="s1-btn">Continue</button>
 </div>
+
+<!-- Password section -->
 <div class="section" data-height="400">
-	<h1>Sign Up</h1>
+	<h1>Password</h1>
 	<span class="error"></span>
 	<div class="row-container">
 		<a href="javascript:void(0)" class="handler-at" id="toggle-password">
@@ -55,18 +57,27 @@
 
 	<button class="submit" id="s2-btn">Continue</button>
 </div>
+
+<!-- Captcha section -->
 <div class="section" data-height="260">
 	<h1>Are you a robot?</h1>
 	<div class="h-captcha" data-sitekey="<%= key %>"></div>
 	
 	<button class="submit">Continue</button>
 
-	<p class="small">This site is protected by <a href="https://www.hCaptcha.com">hCaptcha</a> and its <a href="https://www.hcaptcha.com/privacy">Privacy Policy</a> and <a href="https://www.hcaptcha.com/terms">Terms of Service</a> apply.
+	<p class="small">
+		This site is protected by <a href="https://www.hCaptcha.com">hCaptcha</a> and its
+		<a href="https://www.hcaptcha.com/privacy">Privacy Policy</a> and
+		<a href="https://www.hcaptcha.com/terms">Terms of Service</a> apply.
+	</p>
 </div>
+
+<!-- Success section -->
 <div class="section" data-height="250">
 	<h1>Sign Up Successful</h1>
 	<div style="width: 80%;">
-		<p>If the email you provided is valid, you should receive an email shortly with a link to verify your account. <b>Your verification link will expire in 1 hour.</b>
-		<p>If you have problems, please contact us at <a href="mailto:contact@robotoskunk.com">contact@robotoskunk.com</a>.
+		<p>
+			You have successfully created your account. We are logging you in...
+		</p>
 	</div>
 </div>

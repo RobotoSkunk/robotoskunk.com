@@ -26,11 +26,25 @@ const DotComEmail = DotComCore.Email;
 
 
 export class Email extends DotComEmail
-{
+{	
+	// #region Methods to prevent stupid TypeScript errors.
 	constructor(email: IEmail)
 	{
 		super(email);
 	}
+
+	public static async GetById(id: string)
+	{
+		const email = await super.GetById(id);
+		return email ? new Email(email) : null;
+	}
+
+	public static async Get(email: string): Promise<Email>
+	{
+		const emailObj = await super.Get(email);
+		return emailObj ? new Email(emailObj) : null;
+	}
+	// #endregion
 
 	/**
 	 * Creates a new email address in the database.
@@ -92,20 +106,6 @@ export class Email extends DotComEmail
 		}
 	}
 
-
-	// #region Methods to prevent stupid TypeScript errors.
-	public static async GetById(id: string)
-	{
-		const email = await super.GetById(id);
-		return email ? new Email(email) : null;
-	}
-
-	public static async Get(email: string): Promise<Email>
-	{
-		const emailObj = await super.Get(email);
-		return emailObj ? new Email(emailObj) : null;
-	}
-	// #endregion
 }
 
 export namespace Email
