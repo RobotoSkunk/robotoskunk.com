@@ -25,22 +25,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
-    const sections = [];
-    for (const section of d.querySelectorAll('.section')) {
-        sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-    }
-    const form = d.querySelector('form');
-    const f = new RSApiForm(form, sections);
-    f.showSection(0);
-    yield f.show();
-    function setError(msg) {
-        d.querySelectorAll('.error').forEach(e => e.textContent = msg);
+    const apiForm = new RSApiForm();
+    apiForm.showSection(0);
+    yield apiForm.show();
+    function setErrorMessage(message) {
+        d.querySelectorAll('.error').forEach(e => e.textContent = message);
     }
     const buttons = d.querySelectorAll('button.submit');
     // #region Password strength
-    function pwrdMatch() {
-        const match = d.querySelector('#password').value === d.querySelector('#password-repeat').value;
-        setError(match ? '' : 'Passwords do not match.');
+    function passwordMatch() {
+        const passwordInput = d.querySelector('#password');
+        const passwordRepeatInput = d.querySelector('#password-repeat');
+        const match = passwordInput.value === passwordRepeatInput.value;
+        setErrorMessage(match ? '' : 'Passwords do not match.');
         return match;
     }
     function checkPwrd(password) {
@@ -53,21 +50,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             d.querySelector('#handler-alert').className = data.score <= 1 ? 'handler-at danger' : (data.score == 2 ? 'handler-at warning' : 'handler-at');
             d.querySelector('#warning').textContent = data.feedback.warning;
             d.querySelector('#suggestions').innerHTML = '';
-            for (const s of data.feedback.suggestions)
+            for (const s of data.feedback.suggestions) {
                 d.querySelector('#suggestions').appendChild(d.createElement('li')).textContent = s;
-            d.querySelector('#btn').disabled = data.score <= 2 || !pwrdMatch();
+            }
+            d.querySelector('#btn').disabled = data.score <= 2 || !passwordMatch();
         });
     }
     yield checkPwrd(d.querySelector('#password').value);
-    d.querySelector('#password').addEventListener('input', (ev) => __awaiter(this, void 0, void 0, function* () { yield checkPwrd(ev.target.value); }));
-    d.querySelector('#password-repeat').addEventListener('input', (ev) => { d.querySelector('#btn').disabled = !pwrdMatch(); });
+    d.querySelector('#password').addEventListener('input', (ev) => __awaiter(this, void 0, void 0, function* () {
+        yield checkPwrd(ev.target.value);
+    }));
+    d.querySelector('#password-repeat').addEventListener('input', (ev) => {
+        d.querySelector('#btn').disabled = !passwordMatch();
+    });
     // #endregion
     d.querySelector('a#toggle-password').addEventListener('click', (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        /**
-         * @type {HTMLInputElement[]}
-         */
         const input = d.querySelectorAll('input[data-type="password"]');
         for (const i of input) {
             const style = window.getComputedStyle(i);
@@ -77,17 +76,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             }
         }
     });
-    form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
-        if (!form.checkValidity())
-            return form.reportValidity();
+    apiForm.form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
+        if (!apiForm.form.checkValidity()) {
+            return apiForm.form.reportValidity();
+        }
         ev.preventDefault();
         ev.stopPropagation();
         buttons.forEach(s => s.disabled = true);
         buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
-        const data = new FormData(form);
+        const data = new FormData(apiForm.form);
         if (!data.get('h-captcha-response')) {
-            yield f.hide();
-            f.showSection(1);
+            yield apiForm.hide();
+            apiForm.showSection(1);
         }
         else {
             try {
@@ -95,33 +95,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     'method': 'POST',
                     'body': new URLSearchParams(data)
                 });
-                yield f.hide();
+                yield apiForm.hide();
                 if (response.status === 429) {
-                    setError('You have been rate limited. Please try again later.');
-                    f.showSection(0);
+                    setErrorMessage('You have been rate limited. Please try again later.');
+                    apiForm.showSection(0);
                 }
                 else if (response.status >= 400) {
                     const json = yield response.json();
                     if (json.message)
-                        setError(json.message);
+                        setErrorMessage(json.message);
                     else
-                        setError('');
+                        setErrorMessage('');
                     if (!json.code)
-                        f.showSection(0);
+                        apiForm.showSection(0);
                     hcaptcha.reset();
                 }
                 else {
-                    f.showSection(2);
+                    apiForm.showSection(2);
                     setTimeout(() => { window.location.href = '/accounts/signin'; }, 1000);
                 }
             }
             catch (e) {
                 console.error(e);
-                setError('An error occurred while trying to change your password. Please try again later.');
-                f.showSection(0);
+                setErrorMessage('An error occurred while trying to change your password. Please try again later.');
+                apiForm.showSection(0);
             }
         }
-        yield f.show();
+        yield apiForm.show();
         buttons.forEach(s => s.disabled = false);
         buttons.forEach(s => s.innerHTML = 'Continue');
     }));

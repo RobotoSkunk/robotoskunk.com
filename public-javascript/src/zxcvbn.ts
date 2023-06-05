@@ -17,27 +17,37 @@
 */
 
 
+// @ts-ignore
 zxcvbnts.core.zxcvbnOptions.setOptions({
+	// @ts-ignore
 	'translations': zxcvbnts['language-en'].translations,
+	// @ts-ignore
 	'graphs': zxcvbnts['language-common'].adjacencyGraphs,
 	'dictionary': {
+		// @ts-ignore
 		...zxcvbnts['language-common'].dictionary,
+		// @ts-ignore
 		...zxcvbnts['language-en'].dictionary,
+		// @ts-ignore
 		...zxcvbnts['language-es-es'].dictionary
 	}
 });
 
 /**
  * Sends a request to haveibeenpwned.com to check if a password was exposed by a data breach.
- * @param {string} password The password to check.
- * @returns {Promise<string | null>} A promise that resolves to true if the password was exposed by a data breach.
+ * @param password The password to check.
+ * @returns A promise that resolves to true if the password was exposed by a data breach.
  */
- async function haveIBeenPwned(password) {
-	return new Promise(async (resolve, reject) => {
+async function haveIBeenPwned(password: string): Promise<string | null>
+{
+	return new Promise(async (resolve, reject) =>
+	{
 		try {
 			var pwned = null;
 
-			if (!crypto.subtle) throw new Error('WebCrypto is not supported. Cannot check if password was exposed by a data breach.');
+			if (!crypto.subtle) {
+				throw new Error('WebCrypto is not supported. Cannot check if password was exposed by a data breach.');
+			}
 
 			// deepcode ignore InsecureHash: This is obligatory from the HaveIBeenPwned API
 			const hashBuffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(password));
@@ -45,18 +55,16 @@ zxcvbnts.core.zxcvbnOptions.setOptions({
 			const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 
 
-			const response = await fetch(`https://api.pwnedpasswords.com/range/${encodeURIComponent(hash.substring(0, 5))}`, {
-				'headers': { 'Add-Padding': 'true' }
+			const response = await fetch(
+				`https://api.pwnedpasswords.com/range/${encodeURIComponent(hash.substring(0, 5))}`, {
+				headers: { 'Add-Padding': 'true' }
 			});
 
 			if (response.ok) {
 				const text = await response.text();
 
 				pwned = text.split('\r\n').find(
-					/**
-					 * @param {string} line 
-					 */
-					(line) => line.split(':')[0] === hash.substring(5)
+					(line: string) => line.split(':')[0] === hash.substring(5)
 				);
 			}
 
@@ -69,10 +77,12 @@ zxcvbnts.core.zxcvbnOptions.setOptions({
 
 /**
  * Checks if a password is strong enough.
- * @param {string} password The password to check.
- * @returns {Promise<{score: number, scoreText: string, feedback: {warning: string, suggestions: string[]}}>} A promise that resolves to the password's score and feedback.
+ * @param password The password to check.
+ * @returns A promise that resolves to the password's score and feedback.
  */
-async function zxcvbn(password) {
+async function zxcvbn(password: string): Promise<
+	{ score: number; scoreText: string; feedback: { warning: string; suggestions: string[]; }; }
+> {
 	const json = {
 		score: 0,
 		scoreText: '',
@@ -96,7 +106,7 @@ async function zxcvbn(password) {
 		console.error(e);
 	}
 
-
+	// @ts-ignore
 	const result = zxcvbnts.core.zxcvbn(password, [ 'robotoskunk', 'roboto', 'alexskunk' ]);
 
 	json.score = result.score;

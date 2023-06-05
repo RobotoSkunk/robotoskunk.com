@@ -25,6 +25,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
+    /**
+     * Prints a warning to the console if Do Not Track is enabled.
+     */
     function dnt() {
         console.warn('%cRobotoSkunk: %cDo Not Track is enabled, analytics will not be sent.', 'font-weight: bold;', 'font-weight: normal;');
     }
@@ -50,8 +53,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         });
         try {
             const body = yield res.json();
-            if (body.dnt)
+            if (body.dnt) {
                 dnt();
+            }
         }
         catch (e) {
             console.error('%cRobotoSkunk: %cError sending analytics.', 'font-weight: bold;', 'font-weight: normal;');

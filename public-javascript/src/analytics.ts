@@ -17,9 +17,18 @@
 */
 
 
-(async () => {
-	function dnt() {
-		console.warn('%cRobotoSkunk: %cDo Not Track is enabled, analytics will not be sent.', 'font-weight: bold;', 'font-weight: normal;');
+(async () =>
+{
+	/**
+	 * Prints a warning to the console if Do Not Track is enabled.
+	 */
+	function dnt(): void
+	{
+		console.warn(
+			'%cRobotoSkunk: %cDo Not Track is enabled, analytics will not be sent.',
+			'font-weight: bold;',
+			'font-weight: normal;'
+		);
 	}
 	if (navigator.doNotTrack) {
 		dnt();
@@ -47,7 +56,9 @@
 		try {
 			const body = await res.json();
 
-			if (body.dnt) dnt();
+			if (body.dnt) {
+				dnt();
+			}
 		} catch (e) {
 			console.error('%cRobotoSkunk: %cError sending analytics.', 'font-weight: bold;', 'font-weight: normal;');
 		}

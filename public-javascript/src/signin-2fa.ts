@@ -17,31 +17,28 @@
 */
 
 
-(async () => {
-	const sections = [];
-
-	for (const section of d.querySelectorAll('.section')) {
-		sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-	}
-
-	const form = d.querySelector('form');
-	const f = new RSApiForm(form, sections);
+(async () =>
+{
+	const apiForm = new RSApiForm();
 	
 	const redirectUri = new URLSearchParams(window.location.search).get('redirect_uri') || location.origin;
 
-	f.showSection(0);
-	await f.show();
+	apiForm.showSection(0);
+	await apiForm.show();
 
-	function setError(msg) {
-		d.querySelectorAll('.error').forEach(e => e.textContent = msg);
+	function setErrorMessage(message: string): void
+	{
+		d.querySelectorAll('.error').forEach(e => e.textContent = message);
 	}
 
-	const buttons = d.querySelectorAll('button.submit');
+	const buttons = d.querySelectorAll('button.submit') as NodeListOf<HTMLButtonElement>;
 
 
-	form.addEventListener('submit', async (ev) => {
-		if (!form.checkValidity())
-			return form.reportValidity();
+	apiForm.form.addEventListener('submit', async (ev) =>
+	{
+		if (!apiForm.form.checkValidity()) {
+			return apiForm.form.reportValidity();
+		}
 
 		ev.preventDefault();
 		ev.stopPropagation();
@@ -49,43 +46,44 @@
 		buttons.forEach(s => s.disabled = true);
 		buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
 
-		const data = new FormData(form);
+		const data = new FormData(apiForm.form);
 
 
 		try {
 			const response = await fetch('/accounts/signin/twofa', {
 				'method': 'POST',
-				'body': new URLSearchParams(data)
+				'body': new URLSearchParams(data as any)
 			});
 
-			await f.hide();
+			await apiForm.hide();
 
 
 			if (response.status === 429) {
-				setError('You have been rate limited. Please try again later.');
-				f.showSection(0);
+				setErrorMessage('You have been rate limited. Please try again later.');
+				apiForm.showSection(0);
 			
 			} else if (response.status >= 400) {
 				const json = await response.json();
 
-				if (json.message) setError(json.message);
-				else setError('');
+				if (json.message) setErrorMessage(json.message);
+				else setErrorMessage('');
 
-				f.showSection(0);
+				apiForm.showSection(0);
 			} else {
-				f.showSection(1);
-				setTimeout(() => {
+				apiForm.showSection(1);
+				setTimeout(() =>
+				{
 					window.location.href = redirectUri === location.origin ? '/' : RSUtils.sanitizeUrl(redirectUri);
 				}, 1000);
 			}
 		} catch (e) {
 			console.error(e);
-			setError('An error occurred while trying to verify two-factor authentication.');
-			f.showSection(0);
+			setErrorMessage('An error occurred while trying to verify two-factor authentication.');
+			apiForm.showSection(0);
 			hcaptcha.reset();
 		}
 
-		await f.show();
+		await apiForm.show();
 
 		buttons.forEach(s => s.disabled = false);
 		buttons.forEach(s => s.innerHTML = 'Continue');

@@ -25,14 +25,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
-    const _s = d.querySelector('.section');
-    const sections = [
-        new RSApiFormSection(_s, Number.parseInt(_s.getAttribute('data-height')))
-    ];
-    const form = d.querySelector('form');
-    const f = new RSApiForm(form, sections);
-    f.showSection(0);
-    yield f.show();
+    const apiForm = new RSApiForm();
+    apiForm.showSection(0);
+    yield apiForm.show();
     d.querySelectorAll('.submit').forEach(s => {
         s.addEventListener('click', (ev) => __awaiter(this, void 0, void 0, function* () {
             if (ev.target.dataset.type === 'cancel') {

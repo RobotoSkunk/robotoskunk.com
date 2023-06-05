@@ -42,7 +42,9 @@
 		const input: HTMLInputElement = d.querySelector('input[name="password"]');
 		input.type = input.type === 'password' ? 'text' : 'password';
 
-		d.querySelector('a#toggle-password').innerHTML = `<img width="25" src="/resources/svg/eye-${input.type === 'password' ? 'enable' : 'disable'}.svg" alt="Show password">`;
+		d.querySelector('a#toggle-password').innerHTML = `<img width="25" src="/resources/svg/eye-${
+															input.type === 'password' ? 'enable' : 'disable'
+														}.svg" alt="Show password">`;
 	});
 
 	const buttons: NodeListOf<HTMLButtonElement> = d.querySelectorAll('button.submit');
@@ -69,7 +71,7 @@
 			try {
 				const response = await fetch('/accounts/signin', {
 					'method': 'POST',
-					'body': new URLSearchParams(data as URLSearchParams)
+					'body': new URLSearchParams(data as any)
 				});
 				const json = await response.json();
 

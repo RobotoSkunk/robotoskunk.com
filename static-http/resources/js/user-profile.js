@@ -29,15 +29,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     var _a;
     const commentInput = d.getElementById('comment-input');
     const userHandler = d.getElementById('user-handler');
-    /**
-     * @type {HTMLDivElement}
-     */
     const comments = d.getElementById('comments');
     var cache = {};
     var csrfToken = '';
     const __tmp = d.getElementById('_csrf');
-    if (__tmp)
+    if (__tmp) {
         csrfToken = __tmp.value;
+    }
     const endpoint = `/backend/shouts/${userHandler.value}`;
     var page = 0;
     var maxPage = 0;
@@ -115,7 +113,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             ev.stopPropagation();
             const data = new FormData(form);
             data.append('_csrf', csrfToken);
-            const cont = data.get('content').trim();
+            const cont = data.get('content').toString().trim();
             if (cont === _data.content)
                 return revert(RSUtils.parseMarkdown(_data.content));
             if (cont.length === 0)

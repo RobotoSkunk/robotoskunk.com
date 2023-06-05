@@ -25,47 +25,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
-    const sections = [];
-    for (const section of d.querySelectorAll('.section')) {
-        sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-    }
-    const form = d.querySelector('form');
-    const f = new RSApiForm(form, sections);
+    const apiForm = new RSApiForm();
     const redirectUri = new URLSearchParams(window.location.search).get('redirect_uri') || location.origin;
-    f.showSection(0);
-    yield f.show();
-    function setError(msg) {
-        d.querySelectorAll('.error').forEach(e => e.textContent = msg);
+    apiForm.showSection(0);
+    yield apiForm.show();
+    function setErrorMessage(message) {
+        d.querySelectorAll('.error').forEach(e => e.textContent = message);
     }
     const buttons = d.querySelectorAll('button.submit');
-    form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
-        if (!form.checkValidity())
-            return form.reportValidity();
+    apiForm.form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
+        if (!apiForm.form.checkValidity()) {
+            return apiForm.form.reportValidity();
+        }
         ev.preventDefault();
         ev.stopPropagation();
         buttons.forEach(s => s.disabled = true);
         buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
-        const data = new FormData(form);
+        const data = new FormData(apiForm.form);
         try {
             const response = yield fetch('/accounts/signin/twofa', {
                 'method': 'POST',
                 'body': new URLSearchParams(data)
             });
-            yield f.hide();
+            yield apiForm.hide();
             if (response.status === 429) {
-                setError('You have been rate limited. Please try again later.');
-                f.showSection(0);
+                setErrorMessage('You have been rate limited. Please try again later.');
+                apiForm.showSection(0);
             }
             else if (response.status >= 400) {
                 const json = yield response.json();
                 if (json.message)
-                    setError(json.message);
+                    setErrorMessage(json.message);
                 else
-                    setError('');
-                f.showSection(0);
+                    setErrorMessage('');
+                apiForm.showSection(0);
             }
             else {
-                f.showSection(1);
+                apiForm.showSection(1);
                 setTimeout(() => {
                     window.location.href = redirectUri === location.origin ? '/' : RSUtils.sanitizeUrl(redirectUri);
                 }, 1000);
@@ -73,11 +69,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         catch (e) {
             console.error(e);
-            setError('An error occurred while trying to verify two-factor authentication.');
-            f.showSection(0);
+            setErrorMessage('An error occurred while trying to verify two-factor authentication.');
+            apiForm.showSection(0);
             hcaptcha.reset();
         }
-        yield f.show();
+        yield apiForm.show();
         buttons.forEach(s => s.disabled = false);
         buttons.forEach(s => s.innerHTML = 'Continue');
     }));

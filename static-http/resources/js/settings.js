@@ -24,6 +24,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// Nahhhh, I'm not parsing this to TypeScript 💀 💀 💀 (yet)
 (() => __awaiter(this, void 0, void 0, function* () {
     const endpoint = '/accounts/settings';
     const panels = d.querySelectorAll('.main-panel > .panel');

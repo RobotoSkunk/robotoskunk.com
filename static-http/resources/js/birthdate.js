@@ -25,26 +25,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
-    const sections = [];
-    for (const section of d.querySelectorAll('.section')) {
-        sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-    }
-    const form = d.querySelector('form');
-    const f = new RSApiForm(form, sections);
-    f.showSection(0);
-    yield f.show();
+    const apiForm = new RSApiForm();
+    apiForm.showSection(0);
+    yield apiForm.show();
     function setError(msg) {
         d.querySelectorAll('.error').forEach(e => e.textContent = msg);
     }
     const buttons = d.querySelectorAll('button.submit');
-    const csrf = d.querySelector('input[name="csrf"]');
     d.querySelector('#learn-more').addEventListener('click', (ev) => __awaiter(this, void 0, void 0, function* () {
         ev.preventDefault();
         buttons.forEach(s => s.disabled = true);
         buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
-        yield f.hide();
-        f.showSection(1);
-        yield f.show();
+        yield apiForm.hide();
+        apiForm.showSection(1);
+        yield apiForm.show();
         buttons.forEach(s => s.disabled = false);
         buttons.forEach(s => s.innerHTML = 'Continue');
     }));
@@ -53,33 +47,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         ev.stopPropagation();
         buttons.forEach(s => s.disabled = true);
         buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
-        yield f.hide();
-        f.showSection(0);
-        yield f.show();
+        yield apiForm.hide();
+        apiForm.showSection(0);
+        yield apiForm.show();
         buttons.forEach(s => s.disabled = false);
         buttons.forEach(s => s.innerHTML = 'Continue');
     }));
-    form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
-        if (!form.checkValidity())
-            return form.reportValidity();
+    apiForm.form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
+        if (!apiForm.form.checkValidity())
+            return apiForm.form.reportValidity();
         ev.preventDefault();
         ev.stopPropagation();
         buttons.forEach(s => s.disabled = true);
         buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
-        const data = new FormData(form);
-        const bd = data.get('birthdate');
-        const date = new Date(bd);
+        const data = new FormData(apiForm.form);
+        const birthdate = data.get('birthdate');
+        const date = new Date(birthdate.toString());
         data.delete('birthdate');
-        data.set('birthdate', date.getTime());
+        data.set('birthdate', date.getTime().toString());
         try {
             const response = yield fetch('/accounts/settings/birthdate', {
                 'method': 'POST',
                 'body': new URLSearchParams(data)
             });
-            yield f.hide();
+            yield apiForm.hide();
             if (response.status === 429) {
                 setError('You have been rate limited. Please try again later.');
-                f.showSection(0);
+                apiForm.showSection(0);
             }
             else if (response.status >= 400) {
                 const json = yield response.json();
@@ -88,19 +82,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 else
                     setError('');
                 if (!json.code)
-                    f.showSection(0);
+                    apiForm.showSection(0);
             }
             else {
-                f.showSection(2);
+                apiForm.showSection(2);
                 setTimeout(() => { window.location.href = '/'; }, 1000);
             }
         }
         catch (e) {
             console.error(e);
             setError('An error occurred while trying to update your account. Please try again later.');
-            f.showSection(0);
+            apiForm.showSection(0);
         }
-        yield f.show();
+        yield apiForm.show();
         buttons.forEach(s => s.disabled = false);
         buttons.forEach(s => s.innerHTML = 'Continue');
     }));

@@ -19,36 +19,36 @@ const w = window, d = document;
 class RSUtils {
     /**
      * Mantains a number in a range.
-     * @param {number} x The number to clamp.
-     * @param {number} min The minimum of the range.
-     * @param {number} max The maximum of the range.
-     * @returns {number} The clamped number.
+     * @param x The number to clamp.
+     * @param min The minimum of the range.
+     * @param max The maximum of the range.
+     * @returns The clamped number.
      */
     static clamp(x, min, max) {
         return (x > max ? max : (x < min ? min : x));
     }
     /**
      * Mantains a number in a range of [0, 1].
-     * @param {number} x The number to clamp.
-     * @returns {number} The clamped number.
+     * @param x The number to clamp.
+     * @returns The clamped number.
      */
     static clamp01(x) {
         return (x > 1 ? 1 : (x < 0 ? 0 : x));
     }
     /**
      * Interpolates between two numbers.
-     * @param {number} a The first number.
-     * @param {number} b The second number.
-     * @param {number} t The interpolation factor.
-     * @returns {number} The interpolated number.
+     * @param a The first number.
+     * @param b The second number.
+     * @param t The interpolation factor.
+     * @returns The interpolated number.
      */
     static lerp(a, b, t) {
         return a + (b - a) * t;
     }
     /**
      * Returns a secure random string.
-     * @param {number} length The length of the string.
-     * @returns {string} The random string.
+     * @param length The length of the string.
+     * @returns The random string.
      */
     static randomString(length) {
         const rnd = new Uint8Array(length);
@@ -64,8 +64,8 @@ class RSUtils {
     }
     /**
      * Sanitizes a string to be used as a href destination.
-     * @param {string} str The string to sanitize.
-     * @returns {string} The sanitized string.
+     * @param str The string to sanitize.
+     * @returns The sanitized string.
      */
     static sanitizeUrl(str) {
         str = decodeURIComponent(str);
@@ -81,8 +81,8 @@ class RSUtils {
     }
     /**
      * Sanitizes a string to avoid XSS attacks.
-     * @param {string} str The string to sanitize.
-     * @returns {string} The sanitized string.
+     * @param str The string to sanitize.
+     * @returns The sanitized string.
      */
     static sanitize(str) {
         const __tmp = document.createElement('div');
@@ -94,16 +94,16 @@ class RSUtils {
     }
     /**
      * Unescapes HTML entities.
-     * @param {string} str The string to unescape.
-     * @returns {string} The unescaped string.
+     * @param str The string to unescape.
+     * @returns The unescaped string.
      */
     static unescape(str) {
         return str.replace(/(&quot;|&#34;)/gm, '"').replace(/(&lt;|&#60;)/gm, '<').replace(/(&gt;|&#62;)/gm, '>').replace(/&#39;/gm, "'").replace(/(&amp;|&#38;)/gm, '&');
     }
     /**
      * Parses a string to a custom markdown format.
-     * @param {string} str The string to parse.
-     * @returns {string} The parsed string.
+     * @param str The string to parse.
+     * @returns The parsed string.
      */
     static parseMarkdown(str) {
         const links = {};
@@ -253,7 +253,9 @@ class RSPopup {
 FormData.prototype.toJSON = function () {
     return Object.fromEntries(this);
 };
-const alexTalk = (message) => console.log(`%cAlex Skunk: %c${message}`, "color: #c3e629; font-size: 15px;", "color: #dddddd; font-size: 15px; font-weight: bold;");
+const alexTalk = (message) => {
+    console.log(`%cAlex Skunk: %c${message}`, "color: #c3e629; font-size: 15px;", "color: #dddddd; font-size: 15px; font-weight: bold;");
+};
 (() => {
     // Alex Skunk: Dipping into JavaScript code just to see which phrases appear is cheating.
     const phrases = [

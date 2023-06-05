@@ -19,7 +19,8 @@
 
 const w = window, d = document;
 
-class RSUtils {
+class RSUtils
+{
 	static regex = {
 		handler: /^[a-zA-Z0-9_-]+$/,
 		uri: /https:[\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)/gi,
@@ -28,40 +29,40 @@ class RSUtils {
 
 	/**
 	 * Mantains a number in a range.
-	 * @param {number} x The number to clamp.
-	 * @param {number} min The minimum of the range.
-	 * @param {number} max The maximum of the range.
-	 * @returns {number} The clamped number.
+	 * @param x The number to clamp.
+	 * @param min The minimum of the range.
+	 * @param max The maximum of the range.
+	 * @returns The clamped number.
 	 */
-	static clamp(x, min, max) {
+	static clamp(x: number, min: number, max: number) {
 		return (x > max ? max : (x < min ? min : x));
 	}
 	/**
 	 * Mantains a number in a range of [0, 1].
-	 * @param {number} x The number to clamp.
-	 * @returns {number} The clamped number.
+	 * @param x The number to clamp.
+	 * @returns The clamped number.
 	 */
-	static clamp01(x) {
+	static clamp01(x: number): number {
 		return (x > 1 ? 1 : (x < 0 ? 0 : x));
 	}
 
 	/**
 	 * Interpolates between two numbers.
-	 * @param {number} a The first number.
-	 * @param {number} b The second number.
-	 * @param {number} t The interpolation factor.
-	 * @returns {number} The interpolated number.
+	 * @param a The first number.
+	 * @param b The second number.
+	 * @param t The interpolation factor.
+	 * @returns The interpolated number.
 	 */
-	static lerp(a, b, t) {
+	static lerp(a: number, b: number, t: number): number {
 		return a + (b - a) * t;
 	}
 
 	/**
 	 * Returns a secure random string.
-	 * @param {number} length The length of the string.
-	 * @returns {string} The random string.
+	 * @param length The length of the string.
+	 * @returns The random string.
 	 */
-	static randomString(length) {
+	static randomString(length: number): string {
 		const rnd = new Uint8Array(length);
 
 		if (!crypto.getRandomValues) {
@@ -76,10 +77,10 @@ class RSUtils {
 
 	/**
 	 * Sanitizes a string to be used as a href destination.
-	 * @param {string} str The string to sanitize.
-	 * @returns {string} The sanitized string.
+	 * @param str The string to sanitize.
+	 * @returns The sanitized string.
 	 */
-	static sanitizeUrl(str) {
+	static sanitizeUrl(str: string): string {
 		str = decodeURIComponent(str);
 
 		const __blacklist = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:', 'mailto:', 'tel:'];
@@ -94,10 +95,10 @@ class RSUtils {
 
 	/**
 	 * Sanitizes a string to avoid XSS attacks.
-	 * @param {string} str The string to sanitize.
-	 * @returns {string} The sanitized string.
+	 * @param str The string to sanitize.
+	 * @returns The sanitized string.
 	 */
-	static sanitize(str) {
+	static sanitize(str: string): string {
 		const __tmp = document.createElement('div');
 		__tmp.style.display = 'none';
 		__tmp.textContent = str;
@@ -110,19 +111,19 @@ class RSUtils {
 
 	/**
 	 * Unescapes HTML entities.
-	 * @param {string} str The string to unescape.
-	 * @returns {string} The unescaped string.
+	 * @param str The string to unescape.
+	 * @returns The unescaped string.
 	 */
-	static unescape(str) {
+	static unescape(str: string): string {
 		return str.replace(/(&quot;|&#34;)/gm, '"').replace(/(&lt;|&#60;)/gm, '<').replace(/(&gt;|&#62;)/gm, '>').replace(/&#39;/gm, "'").replace(/(&amp;|&#38;)/gm, '&');
 	}
 
 	/**
 	 * Parses a string to a custom markdown format.
-	 * @param {string} str The string to parse.
-	 * @returns {string} The parsed string.
+	 * @param str The string to parse.
+	 * @returns The parsed string.
 	 */
-	static parseMarkdown(str) {
+	static parseMarkdown(str: string): string {
 		const links = {};
 
 		str = RSUtils.sanitize(str
@@ -216,7 +217,7 @@ class RSNotifications {
 	 * @param {('success'|'error'|'info'|'warning')} type The type of the notification.
 	 * @param {number} [timeout] The timeout in milliseconds.
 	 */
-	static create(message, type, timeout = 5000) {
+	static create(message: string, type: ('success' | 'error' | 'info' | 'warning'), timeout: number = 5000) {
 		const notf = d.createElement('div'),
 			notfId = RSNotifications.notfId++;
 		
@@ -271,13 +272,13 @@ class RSPopup {
 		d.body.appendChild(popup);
 
 		popup.addEventListener('click', (e) => {
-			if (e.target.classList.contains('popup-background'))
+			if ((e.target as HTMLElement).classList.contains('popup-background'))
 				RSPopup.toggle(false);
 		});
 
 		// Fix minor visual bug
 		setTimeout(() => {
-			const bg = d.querySelector('.popup-background');
+			const bg: HTMLDivElement = d.querySelector('.popup-background');
 			bg.style.display = 'block';
 		}, 1000);
 	}
@@ -288,7 +289,7 @@ class RSPopup {
 	}
 
 	static setSize(width, height) {
-		const popup = d.querySelector('.popup-content');
+		const popup: HTMLDivElement = d.querySelector('.popup-content');
 		popup.style.width = width;
 		popup.style.height = height;
 	}
@@ -298,7 +299,13 @@ FormData.prototype.toJSON = function() {
 	return Object.fromEntries(this);
 };
 
-const alexTalk = (message) => console.log(`%cAlex Skunk: %c${message}`, "color: #c3e629; font-size: 15px;", "color: #dddddd; font-size: 15px; font-weight: bold;");
+const alexTalk = (message: string) =>
+{
+	console.log(
+		`%cAlex Skunk: %c${message}`,
+		"color: #c3e629; font-size: 15px;", "color: #dddddd; font-size: 15px; font-weight: bold;"
+	);
+}
 
 (() => {
 	// Alex Skunk: Dipping into JavaScript code just to see which phrases appear is cheating.

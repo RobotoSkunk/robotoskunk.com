@@ -17,6 +17,8 @@
 */
 
 
+// Nahhhh, I'm not parsing this to TypeScript 💀 💀 💀 (yet)
+
 (async () => {
 	const endpoint = '/accounts/settings';
 	const panels = d.querySelectorAll('.main-panel > .panel');

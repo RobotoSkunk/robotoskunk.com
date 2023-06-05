@@ -5,12 +5,15 @@
 	"main": "dist/index.js",
 	"types": "src/types/index.d.ts",
 	"scripts": {
-		"start": "pm2 start pm2.config.js --env production",
 		"debug": "nodemon .",
-		"pm2dev": "pm2 start pm2.dev.config.js --env development",
-		"mailer": "pm2 start pm2.mailer.config.js --env production",
-		"build": "tsc",
-		"build:dev": "tsc -w",
+
+		"start": "pm2 start pm2.config.js --env production",
+		"start:dev": "pm2 start pm2.dev.config.js --env development",
+		"start:mailer": "pm2 start pm2.mailer.config.js --env production",
+
+		"build": "tsc -b tsconfig.json public-javascript/tsconfig.json",
+		"build:dev": "tsc -b tsconfig.json public-javascript/tsconfig.json -w",
+
 		"setup": "npm i && npm run build"
 	},
 	"keywords": [

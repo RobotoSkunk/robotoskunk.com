@@ -53,21 +53,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         d.getElementById('toggle-password').innerHTML = `<img width="25" src="/resources/svg/eye-${passwordInput.type === 'password' ? 'enable' : 'disable'}.svg" alt="Show password">`;
     });
     form.addEventListener('submit', (ev) => __awaiter(this, void 0, void 0, function* () {
-        if (!form.checkValidity())
+        if (!form.checkValidity()) {
             return form.reportValidity();
+        }
         ev.preventDefault();
         const data = new FormData(form);
         const captcha = data.get('h-captcha-response');
-        if (!captcha)
+        if (!captcha) {
             return RSNotifications.create('Please complete the captcha.', 'warning');
+        }
         button.disabled = true;
         button.innerHTML = '<span class="loader black"></span>';
-        const response = yield fetch(window.location.href, {
+        // file deepcode ignore Ssrf: This code isn't executed on the server side
+        const response = yield fetch(RSUtils.sanitizeUrl(window.location.href), {
             method: 'POST',
             body: new URLSearchParams(data)
         });
-        if (response.ok)
+        if (response.ok) {
             window.location.reload();
+        }
         else {
             try {
                 const json = yield response.json();

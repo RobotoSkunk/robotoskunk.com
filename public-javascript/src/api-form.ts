@@ -16,72 +16,75 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+class RSApiForm
+{
+	form: HTMLFormElement = null;
+	sections: NodeListOf<HTMLDivElement> = null;
+	apiForm: HTMLElement = null;
 
-class RSApiFormSection {
-	/**
-	 * @param {HTMLElement} element 
-	 * @param {number} height 
-	 */
-	constructor(element, height) {
-		this.element = element;
-		this.height = height;
-	}
-}
-
-class RSApiForm {
-	/**
-	 * @type {HTMLFormElement}
-	 */
-	form = null;
-	/**
-	 * @type {HTMLElement[]}
-	 */
-	sections = [];
-	/**
-	 * @type {HTMLElement}
-	 */
-	apiForm = null;
-
-	constructor() {
+	constructor()
+	{
 		this.sections = d.querySelectorAll('.section');
 		this.form = document.querySelector('form');
 		this.apiForm = document.querySelector('#api-form');
 	}
 
 	/**
-	 * @param {string} left 
-	 * @param {string} opacity 
-	 * @param {number} duration 
+	 * Animate the form.
+	 * @param left The desired left position.
+	 * @param opacity The desired opacity.
+	 * @param duration The duration of the animation.
 	 */
-	#animate(left, opacity, duration) {
+	private animate(left: string, opacity: number, duration: number)
+	{
 		Velocity(this.form, {
 			'left': left,
-			'opacity': opacity
+			'opacity': opacity.toString()
 		}, {
 			'duration': duration,
 			'easing': 'easeInOutQuart'
 		});
 	}
-	async #wait(duration) {
-		return new Promise((resolve) => {
-			setTimeout(resolve, duration);
+
+	/**
+	 * Wait for a given amount of time.
+	 * @param ms The amount of time to wait.
+	 * @returns 
+	 */
+	private async wait(ms: number)
+	{
+		return new Promise((resolve) =>
+		{
+			setTimeout(resolve, ms);
 		});
-	}
-	async hide() {
-		this.#animate('-100%', '0', 500);
-		await this.#wait(500);
-		this.#animate('100%', '0', 0);
-	}
-	async show() {
-		this.#animate('0%', '1', 500);
-		await this.#wait(500);
 	}
 
 	/**
-	 * @param {number} section
-	 * @param {number} height
+	 * Hide the form.
 	 */
-	showSection(section) {
+	public async hide()
+	{
+		this.animate('-100%', 0, 500);
+		await this.wait(500);
+		this.animate('100%', 0, 0);
+	}
+
+	/**
+	 * Show the form.
+	 */
+	public async show()
+	{
+		this.animate('0%', 1, 500);
+		await this.wait(500);
+	}
+
+	/**
+	 * Show a given section.
+	 * @param section The index of the section to show.
+	 */
+	public showSection(section: number): void
+	{
+
 		this.sections.forEach((s, i) => {
 			s.style.display = i === section ? 'flex' : 'none';
 
@@ -93,10 +96,31 @@ class RSApiForm {
 	}
 
 	/**
-	 * Convert the form to a FormData object.
-	 * @returns {FormData} The form data.
+	 * Show a given section with an animation.
+	 * @param section The index of the section to show.
 	 */
-	getFormData(){
+	public async autoShowSection(section: number): Promise<void>
+	{
+		await this.hide();
+
+		this.sections.forEach((s, i) => {
+			s.style.display = i === section ? 'flex' : 'none';
+
+			if (i === section) {
+				const height = s.scrollHeight + 40;
+				this.apiForm.style.height = `${height}px`;
+			}
+		});
+
+		await this.show();
+	}
+
+	/**
+	 * Convert the form to a FormData object.
+	 * @returns The form data.
+	 */
+	public getFormData(): FormData
+	{
 		const formData = new FormData(this.form);
 		return formData;
 	}

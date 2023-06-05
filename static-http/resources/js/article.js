@@ -25,9 +25,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => {
-    const canvas = d.getElementById('canvas'), canvasSize = d.getElementById('canvas-size'), customSize = d.querySelectorAll('.custom-size > input'), form = d.querySelector('form');
+    const canvas = d.getElementById('canvas');
+    const canvasSize = d.getElementById('canvas-size');
+    const customSize = d.querySelectorAll('.custom-size > input');
+    const form = d.querySelector('form');
     var price = 0, _price = 0, invoice = '';
     RSPopup.install();
+    /**
+     * Sets the new canvas size.
+     * @param w The new width of the canvas.
+     * @param h The new height of the canvas.
+     */
     function setCanvasSize(w, h) {
         w = RSUtils.clamp(w, 100, 10000);
         h = RSUtils.clamp(h, 100, 10000);
@@ -48,23 +56,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     const defSize = article.size.defaults[0];
     setCanvasSize(defSize[0], defSize[1]);
     canvasSize.addEventListener('change', (ev) => {
-        if (ev.target.value === 'custom')
+        if (ev.target.value === 'custom') {
             return;
+        }
         const size = ev.target.value.split('x');
         const w = parseInt(size[0]), h = parseInt(size[1]);
         setCanvasSize(w, h);
         if (customSize.length === 2) {
-            customSize[0].value = w;
-            customSize[1].value = h;
+            customSize[0].value = w.toString();
+            customSize[1].value = h.toString();
         }
     });
     customSize.forEach((e) => {
         e.addEventListener('input', (ev) => {
             const n = parseInt(ev.target.value);
-            if (isNaN(n))
-                ev.target.value = 0;
-            else if (n > 10000)
-                ev.target.value = 10000;
+            if (isNaN(n)) {
+                ev.target.value = '0';
+            }
+            else if (n > 10000) {
+                ev.target.value = '10000';
+            }
             const w = parseInt(customSize[0].value), h = parseInt(customSize[1].value);
             canvasSize.value = article.size.defaults.find((e) => e[0] === w && e[1] === h) ? `${w}x${h}` : 'custom';
             setCanvasSize(w, h);
@@ -95,15 +106,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     break;
                 case 'number':
                     const data = option.data;
-                    var action = `${parseInt(field) * data.value}`;
+                    var action = `${parseInt(field.toString()) * data.value}`;
                     switch (data.action) {
                         case 'add':
                             action = `+ $${action} USD`;
-                            groups[option.group].value += parseInt(field) * data.value;
+                            groups[option.group].value += parseInt(field.toString()) * data.value;
                             break;
                         case 'multiply':
                             action = `x ${action}`;
-                            groups[option.group].value *= parseInt(field) * data.value;
+                            groups[option.group].value *= parseInt(field.toString()) * data.value;
                             break;
                     }
                     groups[option.group].text += `<tr><td><b>${option.label}</b> <td>${action}`;
@@ -152,6 +163,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 const res = yield req.json();
                 RSNotifications.create(res.message, req.ok ? 'success' : 'error');
                 if (req.ok) {
+                    // file deepcode ignore OR: The response ID is given by the server and is not user input.
                     location.href = `/commissions/order/${res.id}`;
                 }
             }
@@ -169,7 +181,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             const min = parseInt(ev.target.min), max = parseInt(ev.target.max);
             if (isNaN(n))
                 n = min;
-            ev.target.value = RSUtils.clamp(n, min, max);
+            ev.target.value = RSUtils.clamp(n, min, max).toString();
         });
     });
     setInterval(() => {

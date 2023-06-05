@@ -17,68 +17,77 @@
 */
 
 
-(async () => {
-	const sections = [];
+(async () =>
+{
+	const apiForm = new RSApiForm();
 
-	for (const section of d.querySelectorAll('.section')) {
-		sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-	}
+	apiForm.showSection(0);
+	await apiForm.show();
 
-	const form = d.querySelector('form');
-	const f = new RSApiForm(form, sections);
-
-	f.showSection(0);
-	await f.show();
-
-	function setError(msg) {
-		d.querySelectorAll('.error').forEach(e => e.textContent = msg);
+	function setErrorMessage(message: string): void
+	{
+		d.querySelectorAll('.error').forEach(e => e.textContent = message);
 	}
 
 
-	const buttons = d.querySelectorAll('button.submit');
+	const buttons = d.querySelectorAll('button.submit') as NodeListOf<HTMLButtonElement>;
 
 	// #region Password strength
-	function pwrdMatch() {
-		const match = d.querySelector('#password').value === d.querySelector('#password-repeat').value;
-		setError(match ? '' : 'Passwords do not match.');
+	function passwordMatch()
+	{
+		const passwordInput = d.querySelector('#password') as HTMLInputElement;
+		const passwordRepeatInput = d.querySelector('#password-repeat') as HTMLInputElement;
+
+		const match = passwordInput.value === passwordRepeatInput.value;
+		setErrorMessage(match ? '' : 'Passwords do not match.');
 
 		return match;
 	}
 
-	async function checkPwrd(password) {
+
+	async function checkPwrd(password: string): Promise<void>
+	{
 		const data = await zxcvbn(password);
 		const colors = ['#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3'];
 
 		d.querySelector('#password-strength').innerHTML = data.scoreText;
-		d.querySelector('#password-bar').style.width = `${data.score / 4 * 100}%`;
-		d.querySelector('#password-bar').style.backgroundColor = colors[data.score];
+		(d.querySelector('#password-bar') as HTMLDivElement).style.width = `${data.score / 4 * 100}%`;
+		(d.querySelector('#password-bar') as HTMLDivElement).style.backgroundColor = colors[data.score];
 		d.querySelector('#handler-alert').className = data.score <= 1 ? 'handler-at danger' : (data.score == 2 ? 'handler-at warning' : 'handler-at');
 
 		d.querySelector('#warning').textContent = data.feedback.warning;
 		d.querySelector('#suggestions').innerHTML = '';
 
-		for (const s of data.feedback.suggestions)
+		for (const s of data.feedback.suggestions) {
 			d.querySelector('#suggestions').appendChild(d.createElement('li')).textContent = s;
+		}
 
-		d.querySelector('#btn').disabled = data.score <= 2 || !pwrdMatch();
+		(d.querySelector('#btn') as HTMLButtonElement).disabled = data.score <= 2 || !passwordMatch();
 	}
-	await checkPwrd(d.querySelector('#password').value);
 
-	d.querySelector('#password').addEventListener('input', async (ev) => { await checkPwrd(ev.target.value); });
-	d.querySelector('#password-repeat').addEventListener('input', (ev) => { d.querySelector('#btn').disabled = !pwrdMatch(); });
+	await checkPwrd((d.querySelector('#password') as HTMLInputElement).value);
+
+
+
+	d.querySelector('#password').addEventListener('input', async (ev) =>
+	{
+		await checkPwrd((ev.target as HTMLInputElement).value);
+	});
+	d.querySelector('#password-repeat').addEventListener('input', (ev) =>
+	{
+		(d.querySelector('#btn') as HTMLButtonElement).disabled = !passwordMatch();
+	});
 	// #endregion
 
 
-	d.querySelector('a#toggle-password').addEventListener('click', (ev) => {
+	d.querySelector('a#toggle-password').addEventListener('click', (ev) =>
+	{
 		ev.preventDefault();
 		ev.stopPropagation();
 
-		/**
-		 * @type {HTMLInputElement[]}
-		 */
-		const input = d.querySelectorAll('input[data-type="password"]');
+		const input = d.querySelectorAll('input[data-type="password"]') as NodeListOf<HTMLInputElement>;
 
-		for (const i of input) {
+		for (const i of input as unknown as HTMLInputElement[]) {
 			const style = window.getComputedStyle(i);
 
 			if (style.display !== 'none') {
@@ -89,9 +98,11 @@
 	});
 
 
-	form.addEventListener('submit', async (ev) => {
-		if (!form.checkValidity())
-			return form.reportValidity();
+	apiForm.form.addEventListener('submit', async (ev) =>
+	{
+		if (!apiForm.form.checkValidity()) {
+			return apiForm.form.reportValidity();
+		}
 
 		ev.preventDefault();
 		ev.stopPropagation();
@@ -99,44 +110,44 @@
 		buttons.forEach(s => s.disabled = true);
 		buttons.forEach(s => s.innerHTML = '<span class="loader black"></span>');
 
-		const data = new FormData(form);
+		const data = new FormData(apiForm.form);
 
 		if (!data.get('h-captcha-response')) {
-			await f.hide();
-			f.showSection(1);
+			await apiForm.hide();
+			apiForm.showSection(1);
 		} else {
 			try {
 				const response = await fetch('/accounts/change-password', {
 					'method': 'POST',
-					'body': new URLSearchParams(data)
+					'body': new URLSearchParams(data as any)
 				});
 
-				await f.hide();
+				await apiForm.hide();
 
 				if (response.status === 429) {
-					setError('You have been rate limited. Please try again later.');
-					f.showSection(0);
+					setErrorMessage('You have been rate limited. Please try again later.');
+					apiForm.showSection(0);
 				
 				} else if (response.status >= 400) {
 					const json = await response.json();
 
-					if (json.message) setError(json.message);
-					else setError('');
+					if (json.message) setErrorMessage(json.message);
+					else setErrorMessage('');
 
-					if (!json.code) f.showSection(0);
+					if (!json.code) apiForm.showSection(0);
 					hcaptcha.reset();
 				} else {
-					f.showSection(2);
+					apiForm.showSection(2);
 					setTimeout(() => { window.location.href = '/accounts/signin' }, 1000);
 				}
 			} catch (e) {
 				console.error(e);
-				setError('An error occurred while trying to change your password. Please try again later.');
-				f.showSection(0);
+				setErrorMessage('An error occurred while trying to change your password. Please try again later.');
+				apiForm.showSection(0);
 			}
 		}
 
-		await f.show();
+		await apiForm.show();
 
 		buttons.forEach(s => s.disabled = false);
 		buttons.forEach(s => s.innerHTML = 'Continue');

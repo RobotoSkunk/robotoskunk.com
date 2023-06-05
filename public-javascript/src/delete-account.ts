@@ -17,8 +17,9 @@
 */
 
 
-(async () => {
-	const _tmp = d.getElementById('h-captcha');
+(async () =>
+{
+	const _tmp: HTMLElement = d.getElementById('h-captcha');
 	const hCaptcha = _tmp.dataset.sitekey;
 	_tmp.remove();
 
@@ -26,8 +27,7 @@
 	RSPopup.install();
 
 
-
-	const form = d.createElement('form');
+	const form: HTMLFormElement = d.createElement('form');
 	form.setAttribute('method', 'POST');
 
 	form.innerHTML = `<h2>Are you sure?</h2>
@@ -50,34 +50,48 @@
 	d.getElementById('open-panel').addEventListener('click', () => { RSPopup.toggle(true); });
 
 
-	const passwordInput = form.querySelector('input[type="password"]');
-	d.getElementById('toggle-password').addEventListener('click', (ev) => {
+	const passwordInput: HTMLInputElement = form.querySelector('input[type="password"]');
+
+	d.getElementById('toggle-password').addEventListener('click', (ev) =>
+	{
 		ev.preventDefault();
 
 		passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-		d.getElementById('toggle-password').innerHTML = `<img width="25" src="/resources/svg/eye-${passwordInput.type === 'password' ? 'enable' : 'disable'}.svg" alt="Show password">`;
+
+		d.getElementById('toggle-password').innerHTML = `<img width="25" src="/resources/svg/eye-${
+															passwordInput.type === 'password' ? 'enable' : 'disable'
+														}.svg" alt="Show password">`;
 	});
 
 
-	form.addEventListener('submit', async (ev) => {
-		if (!form.checkValidity()) return form.reportValidity();
+	form.addEventListener('submit', async (ev) =>
+	{
+		if (!form.checkValidity()) {
+			return form.reportValidity();
+		}
 		ev.preventDefault();
 
 		const data = new FormData(form);
 
 		const captcha = data.get('h-captcha-response');
-		if (!captcha) return RSNotifications.create('Please complete the captcha.', 'warning');
+		if (!captcha) {
+			return RSNotifications.create('Please complete the captcha.', 'warning');
+		}
 
 		button.disabled = true;
 		button.innerHTML = '<span class="loader black"></span>';
 
-		const response = await fetch(window.location.href, {
+
+		// file deepcode ignore Ssrf: This code isn't executed on the server side
+		const response = await fetch(RSUtils.sanitizeUrl(window.location.href), {
 			method: 'POST',
-			body: new URLSearchParams(data)
+			body: new URLSearchParams(data as any)
 		});
-	
-		if (response.ok) window.location.reload();
-		else {
+
+
+		if (response.ok) {
+			window.location.reload();
+		} else {
 			try {
 				const json = await response.json();
 				RSNotifications.create(json.message, 'warning');

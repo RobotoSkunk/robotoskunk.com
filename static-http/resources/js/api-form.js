@@ -24,57 +24,64 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _RSApiForm_instances, _RSApiForm_animate, _RSApiForm_wait;
-class RSApiFormSection {
-    /**
-     * @param {HTMLElement} element
-     * @param {number} height
-     */
-    constructor(element, height) {
-        this.element = element;
-        this.height = height;
-    }
-}
 class RSApiForm {
     constructor() {
-        _RSApiForm_instances.add(this);
-        /**
-         * @type {HTMLFormElement}
-         */
         this.form = null;
-        /**
-         * @type {HTMLElement[]}
-         */
-        this.sections = [];
-        /**
-         * @type {HTMLElement}
-         */
+        this.sections = null;
         this.apiForm = null;
         this.sections = d.querySelectorAll('.section');
         this.form = document.querySelector('form');
         this.apiForm = document.querySelector('#api-form');
     }
-    hide() {
-        return __awaiter(this, void 0, void 0, function* () {
-            __classPrivateFieldGet(this, _RSApiForm_instances, "m", _RSApiForm_animate).call(this, '-100%', '0', 500);
-            yield __classPrivateFieldGet(this, _RSApiForm_instances, "m", _RSApiForm_wait).call(this, 500);
-            __classPrivateFieldGet(this, _RSApiForm_instances, "m", _RSApiForm_animate).call(this, '100%', '0', 0);
-        });
-    }
-    show() {
-        return __awaiter(this, void 0, void 0, function* () {
-            __classPrivateFieldGet(this, _RSApiForm_instances, "m", _RSApiForm_animate).call(this, '0%', '1', 500);
-            yield __classPrivateFieldGet(this, _RSApiForm_instances, "m", _RSApiForm_wait).call(this, 500);
+    /**
+     * Animate the form.
+     * @param left The desired left position.
+     * @param opacity The desired opacity.
+     * @param duration The duration of the animation.
+     */
+    animate(left, opacity, duration) {
+        Velocity(this.form, {
+            'left': left,
+            'opacity': opacity.toString()
+        }, {
+            'duration': duration,
+            'easing': 'easeInOutQuart'
         });
     }
     /**
-     * @param {number} section
-     * @param {number} height
+     * Wait for a given amount of time.
+     * @param ms The amount of time to wait.
+     * @returns
+     */
+    wait(ms) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+        });
+    }
+    /**
+     * Hide the form.
+     */
+    hide() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.animate('-100%', 0, 500);
+            yield this.wait(500);
+            this.animate('100%', 0, 0);
+        });
+    }
+    /**
+     * Show the form.
+     */
+    show() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.animate('0%', 1, 500);
+            yield this.wait(500);
+        });
+    }
+    /**
+     * Show a given section.
+     * @param section The index of the section to show.
      */
     showSection(section) {
         this.sections.forEach((s, i) => {
@@ -86,29 +93,31 @@ class RSApiForm {
         });
     }
     /**
+     * Show a given section with an animation.
+     * @param section The index of the section to show.
+     */
+    autoShowSection(section) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.hide();
+            this.sections.forEach((s, i) => {
+                s.style.display = i === section ? 'flex' : 'none';
+                if (i === section) {
+                    const height = s.scrollHeight + 40;
+                    this.apiForm.style.height = `${height}px`;
+                }
+            });
+            yield this.show();
+        });
+    }
+    /**
      * Convert the form to a FormData object.
-     * @returns {FormData} The form data.
+     * @returns The form data.
      */
     getFormData() {
         const formData = new FormData(this.form);
         return formData;
     }
 }
-_RSApiForm_instances = new WeakSet(), _RSApiForm_animate = function _RSApiForm_animate(left, opacity, duration) {
-    Velocity(this.form, {
-        'left': left,
-        'opacity': opacity
-    }, {
-        'duration': duration,
-        'easing': 'easeInOutQuart'
-    });
-}, _RSApiForm_wait = function _RSApiForm_wait(duration) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve) => {
-            setTimeout(resolve, duration);
-        });
-    });
-};
 /*(() => {
     const bg = document.querySelector('#bg-filter');
 

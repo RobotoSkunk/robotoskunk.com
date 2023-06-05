@@ -17,22 +17,23 @@
 */
 
 
-// Verify if browser supports all the required features
-// If not, redirect to /unsupported/
-try {
-	const functions = [
-		fetch,
-		Promise,
-		Proxy,
-		URL,
-		TextEncoder
-	];
-	
-	for (var i in functions) {
-		if (typeof functions[i] === 'undefined') {
-			throw new Error('Browser is not supported');
-		}
-	}
-} catch (e) {
-	window.location.href = '/error/unsupported/';
-}
+(async () =>
+{
+	const apiForm = new RSApiForm();
+	apiForm.showSection(0);
+	await apiForm.show();
+
+
+	d.querySelectorAll('.submit').forEach(s =>
+	{
+		s.addEventListener('click', async (ev) =>
+		{
+			if ((ev.target as HTMLElement).dataset.type === 'cancel') {
+				ev.preventDefault();
+				ev.stopPropagation();
+
+				window.location.href = '/';
+			}
+		});
+	});
+})();

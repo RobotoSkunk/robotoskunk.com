@@ -25,14 +25,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => __awaiter(this, void 0, void 0, function* () {
-    const sections = [];
-    for (const section of d.querySelectorAll('.section')) {
-        sections.push(new RSApiFormSection(section, Number.parseInt(section.getAttribute('data-height'))));
-    }
-    const form = d.querySelector('form');
-    const f = new RSApiForm(form, sections);
-    f.showSection(0);
-    yield f.show();
+    const apiForm = new RSApiForm();
+    apiForm.showSection(0);
+    yield apiForm.show();
     function checkPwrd(password) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield zxcvbn(password);

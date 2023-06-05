@@ -17,26 +17,23 @@
 */
 
 
-(async () => {
-	const _s = d.querySelector('.section');
-	const sections = [
-		new RSApiFormSection(_s, Number.parseInt(_s.getAttribute('data-height')))
-	];
+(() =>
+{
+	var desc = d.getElementById('description').innerText;
 
-	const form = d.querySelector('form');
-	const f = new RSApiForm(form, sections);
-	f.showSection(0);
-	await f.show();
+	d.getElementById('description').innerHTML = RSUtils.parseMarkdown(RSUtils.unescape(desc));
 
+	d.getElementById('copy').addEventListener('click', async () =>
+	{
+		const content = d.getElementById('copy-id').innerText;
+		await navigator.clipboard.writeText(content);
 
-	d.querySelectorAll('.submit').forEach(s => {
-		s.addEventListener('click', async (ev) => {
-			if (ev.target.dataset.type === 'cancel') {
-				ev.preventDefault();
-				ev.stopPropagation();
+		const notice = d.getElementById('copy-notice');
+		notice.classList.add('show');
 
-				window.location.href = '/';
-			}
-		});
+		setTimeout(() =>
+		{
+			notice.classList.remove('show');
+		}, 1000);
 	});
 })();

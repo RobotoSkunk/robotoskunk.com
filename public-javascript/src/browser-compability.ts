@@ -17,20 +17,25 @@
 */
 
 
-(() => {
-	var desc = d.getElementById('description').innerText;
-
-	d.getElementById('description').innerHTML = RSUtils.parseMarkdown(RSUtils.unescape(desc));
-
-	d.getElementById('copy').addEventListener('click', async () => {
-		const content = d.getElementById('copy-id').innerText;
-		await navigator.clipboard.writeText(content);
-
-		const notice = d.getElementById('copy-notice');
-		notice.classList.add('show');
-
-		setTimeout(() => {
-			notice.classList.remove('show');
-		}, 1000);
-	});
+// Verify if browser supports all the required features
+// If not, redirect to /unsupported/
+(() =>
+{
+	try {
+		const functions = [
+			fetch,
+			Promise,
+			Proxy,
+			URL,
+			TextEncoder
+		];
+		
+		for (var i in functions) {
+			if (typeof functions[i] === 'undefined') {
+				throw new Error('Browser is not supported');
+			}
+		}
+	} catch (e) {
+		window.location.href = '/error/unsupported/';
+	}
 })();

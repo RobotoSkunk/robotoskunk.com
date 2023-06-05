@@ -20,17 +20,17 @@
 // file deepcode ignore DOMXSS: RSUtils.parseMarkdown() already sanitizes the string with RSUtils.sanitize()
 
 (async () => {
-	const commentInput = d.getElementById('comment-input');
-	const userHandler = d.getElementById('user-handler');
-	/**
-	 * @type {HTMLDivElement}
-	 */
-	const comments = d.getElementById('comments');
+	const commentInput = d.getElementById('comment-input') as HTMLTextAreaElement;
+	const userHandler = d.getElementById('user-handler') as HTMLInputElement;
+	const comments = d.getElementById('comments') as HTMLDivElement;
+
 	var cache = {};
 	var csrfToken = '';
 
-	const __tmp = d.getElementById('_csrf');
-	if (__tmp) csrfToken = __tmp.value;
+	const __tmp = d.getElementById('_csrf') as HTMLInputElement;
+	if (__tmp) {
+		csrfToken = __tmp.value;
+	}
 
 
 	const endpoint = `/backend/shouts/${userHandler.value}`;
@@ -44,7 +44,7 @@
 		const content = commentInput.value.trim();
 
 		d.getElementById('comment-size').innerText = `${content.length} / 250`;
-		d.getElementById('comment-post').disabled = content.length === 0 || content.length > 250;
+		(d.getElementById('comment-post') as HTMLInputElement).disabled = content.length === 0 || content.length > 250;
 	}
 	if (commentInput) {
 		commentInput.addEventListener('input', async (ev) => { cinf(); });
@@ -127,7 +127,7 @@
 
 			const data = new FormData(form);
 			data.append('_csrf', csrfToken);
-			const cont = data.get('content').trim();
+			const cont = data.get('content').toString().trim();
 
 			if (cont === _data.content) return revert(RSUtils.parseMarkdown(_data.content));
 			if (cont.length === 0) return RSNotifications.create('Comment cannot be empty.', 'warning');
@@ -138,7 +138,7 @@
 			try {
 				const res = await fetch(form.getAttribute('action'), {
 					method: 'POST',
-					body: new URLSearchParams(data)
+					body: new URLSearchParams(data as any)
 				});
 
 				if (res.ok) {
@@ -361,17 +361,17 @@
 
 
 	d.getElementById('shoutout-form')?.addEventListener('submit', async (ev) => {
-		if (!ev.target.checkValidity())
-			return ev.target.reportValidity();
+		if (!(ev.target as HTMLFormElement).checkValidity())
+			return (ev.target as HTMLFormElement).reportValidity();
 
 		ev.preventDefault();
 
-		const form = new FormData(ev.target);
+		const form = new FormData((ev.target as HTMLFormElement));
 
 		try {
 			const res = await fetch(endpoint, {
 				method: 'PUT',
-				body: new URLSearchParams(form)
+				body: new URLSearchParams(form as any)
 			});
 
 			if (res.ok) {
@@ -397,7 +397,7 @@
 		el.addEventListener('click', async (ev) => {
 			ev.stopPropagation();
 
-			switch (ev.target.getAttribute('action')) {
+			switch ((ev.target as HTMLButtonElement).getAttribute('action')) {
 				case 'back': page--; break;
 				case 'forward': page++; break;
 				case 'first': page = 0; break;
