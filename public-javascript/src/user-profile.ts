@@ -81,7 +81,7 @@
 		input.setAttribute('name', 'content');
 		input.setAttribute('required', 'true');
 		input.setAttribute('maxlength', '1000');
-		input.setAttribute('rows', _data.content.replace('\r', '').split('\n').length);
+		input.setAttribute('rows', _data.content.replaceAll('\r', '').split('\n').length);
 		input.value = _data.content;
 
 		form.append(input);
