@@ -220,6 +220,7 @@ button:disabled:hover, button:disabled:focus { border: 1px solid #ccc; }
 	font-size: 14px;
 	font-weight: 300;
 	color: #f54b4b;
+	max-width: 80%;
 }
 
 .bg-image {

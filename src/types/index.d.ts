@@ -80,6 +80,27 @@ declare global
 			analyticsEnabled?: boolean;
 			checkIfUserHasBirthdate?: boolean | undefined;
 		}
+
+		interface HeadOptionsBase {
+			type: 'css' | 'js' | 'link';
+			source: string;
+		}
+
+		interface HeadOptionsCss extends HeadOptionsBase {
+			type: 'css';
+		}
+		interface HeadOptionsJs extends HeadOptionsBase {
+			type: 'js';
+			defer?: boolean;
+		}
+		interface HeadOptionsLink extends HeadOptionsBase {
+			type: 'link';
+			as?: string;
+			rel?: string;
+			mimeType?: string;
+		}
+
+		type HeadOptions = HeadOptionsCss | HeadOptionsJs | HeadOptionsLink;
 	}
 
 	namespace Express
@@ -91,6 +112,12 @@ declare global
 			minifyOptions: any;
 			isApi?: boolean
 			getEJSPath: (path: string) => string;
+
+			/**
+			 * Adds a new element to the head of the page.
+			 * @param elements The elements to add to the head.
+			 */
+			addToHead(... elements: RobotoSkunk.HeadOptions[]): void;
 		}
 	}
 }

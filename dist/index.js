@@ -68,12 +68,19 @@ const useragent = __importStar(require("express-useragent"));
 const minify_1 = require("./libraries/minify");
 const rateLimiter_1 = require("./libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
+const dotcomcore_1 = __importDefault(require("dotcomcore"));
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("./globals");
 const db_1 = require("./libraries/db");
 const db_utils_1 = require("./libraries/db-utils");
 const __staticFiles = './static-http';
 const app = (0, express_1.default)();
+dotcomcore_1.default.Core.Config({
+    database: globals_1.env.database,
+    hmacSalt: globals_1.env.keys.SALT,
+    hmacSecret: globals_1.env.keys.HMAC,
+    encryptionKey: globals_1.env.keys.MASTER
+});
 //// These comments bellow are used by DeepCode to ignore some false positives
 // file deepcode ignore UseCsurfForExpress: UserToken.GenerateCSRF() and UserToken.ValidateCSRF() are used to prevent CSRF attacks.
 // file deepcode ignore WebCookieHttpOnlyDisabledByDefault: UserToken.GetCookieParams() already sets the HttpOnly flag
@@ -170,6 +177,34 @@ const app = (0, express_1.default)();
         res.minifyOptions = res.minifyOptions || {};
         res.isApi = req.path.startsWith('/api/') || req.path.startsWith('/oauth/');
         res.rs.env.root = root;
+        res.addToHead = (...headDefinitions) => {
+            for (const definition of headDefinitions) {
+                var txt = '';
+                switch (definition.type) {
+                    case 'js':
+                        if (definition.defer === undefined) {
+                            definition.defer = true;
+                        }
+                        if (definition.source.startsWith('/')) {
+                            definition.source = `${definition.source}?v=${res.rs.env.version}`;
+                        }
+                        txt = `<script ${definition.defer ? 'defer ' : ''}` +
+                            `src="${definition.source}" nonce="${nonce}"></script>`;
+                        break;
+                    case 'css':
+                        txt = `<link rel="preload" href="${definition.source}" as="style">` +
+                            `<link rel="stylesheet" href="${definition.source}">`;
+                        break;
+                    case 'link':
+                        txt = `<link rel="${definition.rel}" href="${definition.source}" ` +
+                            `as="${definition.as}" type="${definition.mimeType}">`;
+                        break;
+                }
+                if (res.rs.html.head === undefined)
+                    res.rs.html.head = '';
+                res.rs.html.head += `${txt}\n`;
+            }
+        };
         res.renderDefault = (view = 'layout.ejs', options = {}) => __awaiter(void 0, void 0, void 0, function* () {
             options = Object.assign({
                 checkBannedUser: true,

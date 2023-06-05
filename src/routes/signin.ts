@@ -18,12 +18,12 @@
 
 
 import express from 'express';
-import { env, logger, regex } from '../../globals';
+import { env, logger, regex } from '../globals';
 import { RSRandom, RSUtils, RSCrypto, RSTime } from 'dotcomcore/dist/RSEngine';
-import { LegacyEmail, LegacyUser, UserAuditLog, UserToken } from '../../libraries/db';
+import { LegacyEmail, LegacyUser, UserAuditLog, UserToken } from '../libraries/db';
 import httpError from 'http-errors';
-import { Schema, SignInBody, SignInSchema } from '../../libraries/schema';
-import { bruteForceLimiters, rateLimiterBruteForce, __httpError, __setHeader } from '../../libraries/rateLimiter';
+import { Schema, SignInBody, SignInSchema } from '../libraries/schema';
+import { bruteForceLimiters, rateLimiterBruteForce, __httpError, __setHeader } from '../libraries/rateLimiter';
 import { RateLimiterRes } from 'rate-limiter-flexible';
 import ejs from 'ejs';
 
@@ -62,13 +62,13 @@ router.get('/', async (req, res, next) => {
 			// 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
 			// };
 
-			res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: env.hcaptcha_keys.site_key });
+			res.rs.html.body = await ejs.renderFile(res.getEJSPath('signin.ejs'), { key: env.hcaptcha_keys.site_key });
 
 		} else {
 			res.rs.html.meta.setSubtitle('Two-Factor Authentication');
 			res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
 
-			res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signin-2fa.ejs'), {
+			res.rs.html.body = await ejs.renderFile(res.getEJSPath('signin-2fa.ejs'), {
 				'csrf': await token.GenerateCSRF(),
 			});
 		}

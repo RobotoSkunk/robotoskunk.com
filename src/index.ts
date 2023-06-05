@@ -36,6 +36,7 @@ import * as useragent from 'express-useragent';
 import { minify } from './libraries/minify';
 import { rateLimiterMiddleware } from './libraries/rateLimiter';
 import ejs from 'ejs';
+import DotComCore from 'dotcomcore';
 
 import express, { Request, Response } from 'express';
 import { env, PORT, phrases, logger, loggerStream } from './globals';
@@ -45,6 +46,13 @@ import { Blacklist, UserRoles } from './libraries/db-utils';
 
 const __staticFiles = './static-http';
 const app = express();
+
+DotComCore.Core.Config({
+	database: env.database,
+	hmacSalt: env.keys.SALT,
+	hmacSecret: env.keys.HMAC,
+	encryptionKey: env.keys.MASTER
+});
 
 
 //// These comments bellow are used by DeepCode to ignore some false positives
@@ -102,6 +110,7 @@ const app = express();
 	
 
 	logger.info('###############################################################################');
+
 
 	// Headers, security and server info
 	app.use(async (req, res, next) =>
@@ -161,6 +170,39 @@ const app = express();
 		res.minifyOptions = res.minifyOptions || {};
 		res.isApi = req.path.startsWith('/api/') || req.path.startsWith('/oauth/');
 		res.rs.env.root = root;
+		res.addToHead = (...headDefinitions) =>
+		{
+			for (const definition of headDefinitions) {
+				var txt = '';
+
+				switch (definition.type) {
+					case 'js':
+						if (definition.defer === undefined) {
+							definition.defer = true;
+						}
+
+						if (definition.source.startsWith('/')) {
+							definition.source = `${definition.source}?v=${res.rs.env.version}`;
+						}
+	
+						txt = `<script ${definition.defer ? 'defer ' : ''}` +
+								`src="${definition.source}" nonce="${nonce}"></script>`
+						break;
+					case 'css':
+						txt = `<link rel="preload" href="${definition.source}" as="style">` +
+								`<link rel="stylesheet" href="${definition.source}">`;
+						break;
+					case 'link':
+						txt = `<link rel="${definition.rel}" href="${definition.source}" ` +
+								`as="${definition.as}" type="${definition.mimeType}">`;
+						break;
+				}
+
+				if (res.rs.html.head === undefined) res.rs.html.head = '';
+
+				res.rs.html.head += `${txt}\n`;
+			}
+		}
 
 
 

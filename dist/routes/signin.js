@@ -29,12 +29,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importDefault(require("express"));
-const globals_1 = require("../../globals");
+const globals_1 = require("../globals");
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
-const db_1 = require("../../libraries/db");
+const db_1 = require("../libraries/db");
 const http_errors_1 = __importDefault(require("http-errors"));
-const schema_1 = require("../../libraries/schema");
-const rateLimiter_1 = require("../../libraries/rateLimiter");
+const schema_1 = require("../libraries/schema");
+const rateLimiter_1 = require("../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const router = express_1.default.Router();
 var Errors;
@@ -64,12 +64,12 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             // res.rs.form = {
             // 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
             // };
-            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signin.ejs'), { key: globals_1.env.hcaptcha_keys.site_key });
+            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('signin.ejs'), { key: globals_1.env.hcaptcha_keys.site_key });
         }
         else {
             res.rs.html.meta.setSubtitle('Two-Factor Authentication');
             res.rs.html.head = `<script defer src="/resources/js/signin-2fa.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>`;
-            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signin-2fa.ejs'), {
+            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('signin-2fa.ejs'), {
                 'csrf': yield token.GenerateCSRF(),
             });
         }

@@ -29,14 +29,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importDefault(require("express"));
-const globals_1 = require("../../globals");
+const globals_1 = require("../globals");
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
-const db_1 = require("../../libraries/db");
+const db_1 = require("../libraries/db");
 const http_errors_1 = __importDefault(require("http-errors"));
-const schema_1 = require("../../libraries/schema");
-const zxcvbn_1 = require("../../libraries/zxcvbn");
-const rateLimiter_1 = require("../../libraries/rateLimiter");
+const schema_1 = require("../libraries/schema");
+const zxcvbn_1 = require("../libraries/zxcvbn");
+const rateLimiter_1 = require("../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
+const EmailQueue_1 = require("../libraries/database/tokens/EmailQueue");
+const dotcomcore_1 = __importDefault(require("dotcomcore"));
+const Email_1 = require("../libraries/database/Email");
 const router = express_1.default.Router();
 var Errors;
 (function (Errors) {
@@ -53,47 +56,137 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         res.rs.html.meta.setSubtitle('Sign Up');
         res.rs.html.meta.description = 'Sign up for an account';
-        res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
-
-			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
-			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
+        if (req.query.token) {
+            if (!(yield EmailQueue_1.EmailQueue.ValidateToken(req.query.token))) {
+                return next((0, http_errors_1.default)(403, 'Invalid token.'));
+            }
+            const today = new Date();
+            const max = new Date();
+            const min = new Date();
+            min.setFullYear(today.getFullYear() - 130);
+            max.setFullYear(today.getFullYear() - 13);
+            res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('signup-last-step.ejs'), {
+                key: globals_1.env.hcaptcha_keys.site_key,
+                min: min.toISOString().split('T')[0],
+                max: max.toISOString().split('T')[0]
+            });
+            yield res.renderDefault('layout-api-form.ejs', {
+                denyIfLoggedIn: true,
+                useZxcvbn: true
+            });
+            return;
+        }
+        res.addToHead({
+            type: 'js',
+            source: 'https://js.hcaptcha.com/1/api.js'
+        }, {
+            type: 'js',
+            source: `/resources/js/signup-first-step.js`
+        }, {
+            type: 'link',
+            rel: 'preload',
+            source: '/resources/svg/eye-enable.svg',
+            as: 'image',
+            mimeType: 'image/svg+xml'
+        }, {
+            type: 'link',
+            rel: 'preload',
+            source: '/resources/svg/eye-disable.svg',
+            as: 'image',
+            mimeType: 'image/svg+xml'
+        });
         // res.rs.form = {
         // 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
         // };
-        const today = new Date();
-        const max = new Date();
-        const min = new Date();
-        min.setFullYear(today.getFullYear() - 130);
-        max.setFullYear(today.getFullYear() - 13);
-        res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('accounts/signup-first-step.ejs'), {
-            key: globals_1.env.hcaptcha_keys.site_key,
-            min: min.toISOString().split('T')[0],
-            max: max.toISOString().split('T')[0]
+        res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('signup-first-step.ejs'), {
+            key: globals_1.env.hcaptcha_keys.site_key
         });
         yield res.renderDefault('layout-api-form.ejs', {
-            denyIfLoggedIn: true,
-            useZxcvbn: true
+            denyIfLoggedIn: true
         });
     }
     catch (e) {
         next((0, http_errors_1.default)(500, e));
     }
 }));
-router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+/**
+ * Checks if the request is valid.
+ */
+function genericChecker(req, res, next) {
     var _a;
-    res.minify = false;
-    yield RSEngine_1.RSRandom.Wait(0, 100);
-    if ((_a = req.useragent) === null || _a === void 0 ? void 0 : _a.isBot)
-        return next((0, http_errors_1.default)(403, 'Forbidden'));
+    return __awaiter(this, void 0, void 0, function* () {
+        res.minify = false;
+        yield RSEngine_1.RSRandom.Wait(0, 100);
+        if ((_a = req.useragent) === null || _a === void 0 ? void 0 : _a.isBot)
+            return 403;
+        try {
+            yield (0, rateLimiter_1.rateLimiterBruteForce)(req, res, next);
+        }
+        catch (e) {
+            return 429;
+        }
+        if (yield res.rs.client.token()) {
+            return 403;
+        }
+        const body = req.body;
+        // #region Check captcha
+        var validRecaptcha = true;
+        if (body['h-captcha-response']) {
+            validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key);
+        }
+        if (!validRecaptcha) {
+            res.status(403).json({
+                'code': Errors.INVALID_CAPTCHA,
+                'message': 'Invalid captcha.'
+            });
+            return -1;
+        }
+        // #endregion
+        return 0;
+    });
+}
+router.post('/email', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield (0, rateLimiter_1.rateLimiterBruteForce)(req, res, next);
+        const result = yield genericChecker(req, res, next);
+        if (result === -1) {
+            return;
+        }
+        if (result !== 0) {
+            return next((0, http_errors_1.default)(result, 'Something went wrong.'));
+        }
+        const client = yield dotcomcore_1.default.Core.Connect();
+        try {
+            if (!(yield Email_1.Email.VerifyIfValid(req.body.email))) {
+                return res.status(400).json({
+                    'code': Errors.INVALID_EMAIL,
+                    'message': 'Invalid email.'
+                });
+            }
+            res.status(200).json({
+                'code': 0,
+                'message': 'OK'
+            });
+        }
+        catch (e) {
+            globals_1.logger.error(e);
+            next((0, http_errors_1.default)(500, e));
+        }
+        finally {
+            client.release();
+        }
     }
     catch (e) {
-        return next((0, http_errors_1.default)(429, 'Too many requests.'));
+        next((0, http_errors_1.default)(500, e));
     }
-    if (yield res.rs.client.token())
-        return next((0, http_errors_1.default)(403, 'You are already logged in.'));
+}));
+router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield genericChecker(req, res, next);
+    if (result === -1) {
+        return;
+    }
+    if (result !== 0) {
+        return next((0, http_errors_1.default)(result, 'Something went wrong.'));
+    }
     const client = yield db_1.pgConn.connect();
     try {
         const body = req.body;
@@ -105,18 +198,6 @@ router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 'message': 'Something went wrong. Refresh the page and try again.'
             });
         }
-        // #region Check captcha
-        var validRecaptcha = true;
-        if (body['h-captcha-response'])
-            validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key);
-        if (!validRecaptcha) {
-            res.status(403).json({
-                'code': Errors.INVALID_CAPTCHA,
-                'message': 'Invalid captcha.'
-            });
-            return;
-        }
-        // #endregion
         // #region Check user data
         body.username = body.username.trim();
         body.email = body.email.trim();

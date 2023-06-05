@@ -17,15 +17,20 @@
 */
 
 
-import express from 'express';
-import { env, logger, regex } from '../../globals';
+import express, { NextFunction, Request, Response } from 'express';
+import { env, logger, regex } from '../globals';
 import { RSRandom, RSTime, RSUtils } from 'dotcomcore/dist/RSEngine';
-import { LegacyEmail, pgConn, LegacyUser } from '../../libraries/db';
+import { LegacyEmail, pgConn, LegacyUser } from '../libraries/db';
 import httpError from 'http-errors';
-import { Schema, SignUpBody, SignUpSchema } from '../../libraries/schema';
-import { zxcvbn } from '../../libraries/zxcvbn';
-import { rateLimiterBruteForce } from '../../libraries/rateLimiter';
+import { Schema, SignUpBody, SignUpSchema } from '../libraries/schema';
+import { zxcvbn } from '../libraries/zxcvbn';
+import { rateLimiterBruteForce } from '../libraries/rateLimiter';
 import ejs from 'ejs';
+
+import { EmailQueue } from '../libraries/database/tokens/EmailQueue';
+import DotComCore from 'dotcomcore';
+import { Email } from '../libraries/database/Email';
+
 
 const router = express.Router();
 
@@ -48,47 +53,163 @@ router.get('/', async (req, res, next) => {
 		res.rs.html.meta.setSubtitle('Sign Up');
 		res.rs.html.meta.description = 'Sign up for an account';
 
-		res.rs.html.head = `<script defer src="/resources/js/signup.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
-			<script defer src="https://js.hcaptcha.com/1/api.js?v=${res.rs.env.version}" nonce="${res.rs.server.nonce}"></script>
+		if (req.query.token) {
+			if (!(await EmailQueue.ValidateToken(req.query.token as string))) {
+				return next(httpError(403, 'Invalid token.'));
+			}
 
-			<link rel="preload" href="/resources/svg/eye-enable.svg" as="image" type="image/svg+xml">
-			<link rel="preload" href="/resources/svg/eye-disable.svg" as="image" type="image/svg+xml">`;
+			const today = new Date();
+
+			const max = new Date();
+			const min = new Date();
+			min.setFullYear(today.getFullYear() - 130);
+			max.setFullYear(today.getFullYear() - 13);
+
+
+			res.rs.html.body = await ejs.renderFile(res.getEJSPath('signup-last-step.ejs'), {
+				key: env.hcaptcha_keys.site_key,
+				min: min.toISOString().split('T')[0],
+				max: max.toISOString().split('T')[0]
+			});
+
+			await res.renderDefault('layout-api-form.ejs', {
+				denyIfLoggedIn: true,
+				useZxcvbn: true
+			});
+
+			return;
+		}
+
+		res.addToHead(
+			{
+				type: 'js',
+				source: 'https://js.hcaptcha.com/1/api.js'
+			}, {
+				type: 'js',
+				source: `/resources/js/signup-first-step.js`
+			}, {
+				type: 'link',
+				rel: 'preload',
+				source: '/resources/svg/eye-enable.svg',
+				as: 'image',
+				mimeType: 'image/svg+xml'
+			}, {
+				type: 'link',
+				rel: 'preload',
+				source: '/resources/svg/eye-disable.svg',
+				as: 'image',
+				mimeType: 'image/svg+xml'
+			}
+		);
 
 		// res.rs.form = {
 		// 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
 		// };
 
-		const today = new Date();
 
-		const max = new Date();
-		const min = new Date();
-		min.setFullYear(today.getFullYear() - 130);
-		max.setFullYear(today.getFullYear() - 13);
-
-
-		res.rs.html.body = await ejs.renderFile(res.getEJSPath('accounts/signup-first-step.ejs'), {
-			key: env.hcaptcha_keys.site_key,
-			min: min.toISOString().split('T')[0],
-			max: max.toISOString().split('T')[0]
+		res.rs.html.body = await ejs.renderFile(res.getEJSPath('signup-first-step.ejs'), {
+			key: env.hcaptcha_keys.site_key
 		});
 
 		await res.renderDefault('layout-api-form.ejs', {
-			denyIfLoggedIn: true,
-			useZxcvbn: true
+			denyIfLoggedIn: true
 		});
 	} catch (e) {
 		next(httpError(500, e));
 	}
 });
 
-router.post('/', async (req, res, next) => {
+
+/**
+ * Checks if the request is valid.
+ */
+async function genericChecker(req: Request, res: Response, next: NextFunction): Promise<number>
+{
 	res.minify = false;
 	await RSRandom.Wait(0, 100);
-	if (req.useragent?.isBot) return next(httpError(403, 'Forbidden'));
+	if (req.useragent?.isBot) return 403;
+
+	try {
+		await rateLimiterBruteForce(req, res, next);
+	} catch (e) {
+		return 429
+	}
+
+	if (await res.rs.client.token()) {
+		return 403
+	}
 
 
-	try { await rateLimiterBruteForce(req, res, next); } catch (e) { return next(httpError(429, 'Too many requests.')) }
-	if (await res.rs.client.token()) return next(httpError(403, 'You are already logged in.'));
+	const body: SignUpBody = req.body;
+
+	// #region Check captcha
+	var validRecaptcha = true;
+
+	if (body['h-captcha-response']) {
+		validRecaptcha = await RSUtils.VerifyCaptcha(body['h-captcha-response'], env.hcaptcha_keys.secret_key);
+	}
+
+
+	if (!validRecaptcha) {
+		res.status(403).json({
+			'code': Errors.INVALID_CAPTCHA,
+			'message': 'Invalid captcha.'
+		});
+		return -1;
+	}
+	// #endregion
+
+	return 0;
+}
+
+
+router.post('/email', async (req, res, next) =>
+{
+	try {
+		const result = await genericChecker(req, res, next);
+
+		if (result === -1) {
+			return;
+		}
+		if (result !== 0) {
+			return next(httpError(result, 'Something went wrong.'));
+		}
+	
+		const client = await DotComCore.Core.Connect();
+	
+		try {
+			if (!(await Email.VerifyIfValid(req.body.email))) {
+				return res.status(400).json({
+					'code': Errors.INVALID_EMAIL,
+					'message': 'Invalid email.'
+				});
+			}
+
+			res.status(200).json({
+				'code': 0,
+				'message': 'OK'
+			});
+		} catch (e) {
+			logger.error(e);
+			next(httpError(500, e));
+		} finally {
+			client.release();
+		}
+	} catch (e) {
+		next(httpError(500, e));
+	}
+});
+
+
+router.post('/', async (req, res, next) => {
+	const result = await genericChecker(req, res, next);
+
+	if (result === -1) {
+		return;
+	}
+	if (result !== 0) {
+		return next(httpError(result, 'Something went wrong.'));
+	}
 
 
 	const client = await pgConn.connect();
@@ -104,22 +225,6 @@ router.post('/', async (req, res, next) => {
 				'message': 'Something went wrong. Refresh the page and try again.'
 			});
 		}
-
-		// #region Check captcha
-		var validRecaptcha = true;
-
-		if (body['h-captcha-response'])
-			validRecaptcha = await RSUtils.VerifyCaptcha(body['h-captcha-response'], env.hcaptcha_keys.secret_key);
-
-
-		if (!validRecaptcha) {
-			res.status(403).json({
-				'code': Errors.INVALID_CAPTCHA,
-				'message': 'Invalid captcha.'
-			});
-			return;
-		}
-		// #endregion
 
 
 		// #region Check user data
