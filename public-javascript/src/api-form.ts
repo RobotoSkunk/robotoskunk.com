@@ -18,9 +18,9 @@
 
 class RSApiForm
 {
-	form: HTMLFormElement = null;
-	sections: NodeListOf<HTMLDivElement> = null;
-	apiForm: HTMLElement = null;
+	form: HTMLFormElement;
+	sections: NodeListOf<HTMLDivElement>;
+	apiForm: HTMLElement;
 
 	constructor()
 	{

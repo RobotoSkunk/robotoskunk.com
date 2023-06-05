@@ -26,9 +26,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 class RSApiForm {
     constructor() {
-        this.form = null;
-        this.sections = null;
-        this.apiForm = null;
         this.sections = d.querySelectorAll('.section');
         this.form = document.querySelector('form');
         this.apiForm = document.querySelector('#api-form');
