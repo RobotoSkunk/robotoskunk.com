@@ -46,6 +46,16 @@ export class Email extends DotComEmail
 	}
 	// #endregion
 
+	private static async GenerateGenericCryptoKey(hash: string): Promise<string>
+	{
+		return await RSCrypto.PBKDF2(DotComCore.Core.encryptionKey, hash, 1000, 32);
+	}
+
+	public async GenericCryptoKey(): Promise<string>
+	{
+		return await Email.GenerateGenericCryptoKey(this.hash);
+	}
+
 	/**
 	 * Creates a new email address in the database.
 	 * @param email The email address to add.
@@ -53,7 +63,7 @@ export class Email extends DotComEmail
 	 * @param userId The user ID to associate the email address with, if any.
 	 * @returns A promise that resolves when the email address has been added.
 	 */
-	public static async Set(email: string, type: Email.Type = Email.Type.PRIMARY, userId?: string): Promise<void>
+	public static async Set(email: string, type: Email.Type = Email.Type.PRIMARY, userId?: string): Promise<Email>
 	{
 		const client = await DotComCore.Core.Connect();
 
@@ -63,7 +73,7 @@ export class Email extends DotComEmail
 
 			// If the user doesn't exist, use the main encryption key.
 			if (!userId) {
-				const encryptionKey = await RSCrypto.PBKDF2(DotComCore.Core.encryptionKey, hash, 1000, 32);
+				const encryptionKey = await Email.GenerateGenericCryptoKey(hash);
 				encryptedEmail = await RSCrypto.Encrypt(email, encryptionKey);
 
 			} else {
@@ -74,14 +84,28 @@ export class Email extends DotComEmail
 			}
 
 
-			await client.query(`INSERT INTO emails (hash, email, usrid, refer) VALUES ($1, $2, $3, $4)`, [
-				hash,
-				encryptedEmail,
-				userId || null,
-				type
-			]);
+			const query = await client.query(`INSERT INTO
+				emails (hash, email, usrid, refer)
+				VALUES ($1, $2, $3, $4)
+				RETURNING id`,
+				[
+					hash,
+					encryptedEmail,
+					userId || null,
+					type
+				]
+			);
 
-			return;
+			return new Email({
+				id: query.rows[0].id,
+				hash: hash,
+				email: encryptedEmail,
+				userId: userId || null,
+				type: type,
+				verified: false,
+				createdAt: new Date(),
+				isFake: false
+			});
 		} catch (e) {
 			throw e;
 		} finally {

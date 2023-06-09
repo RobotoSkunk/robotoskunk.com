@@ -17,13 +17,29 @@
 */
 
 
-import DotComCore from 'dotcomcore';
+import DotComCore, { ITokenBase, TokenBase } from 'dotcomcore';
 import { Email } from '../Email';
-const TokenBase = DotComCore.TokenBase;
+
+export interface IEmailQueue extends ITokenBase
+{
+	emailId: string;
+}
 
 
 export class EmailQueue extends TokenBase
 {
+	// #region Methods to prevent stupid TypeScript errors.
+	constructor(id: string, validator: string, createdAt: Date, expiresAt: Date)
+	{
+		super(id, validator, createdAt, expiresAt);
+	}
+
+	public static async GetToken(token: string): Promise<EmailQueue> {
+		const _token = await super.GetToken(token);
+		return _token ? new EmailQueue(_token.id, _token.validator, _token.createdAt, _token.expiresAt) : null;
+	}
+	// #endregion
+
 	/**
 	 * Gets the email of a token.
 	 */
@@ -37,6 +53,42 @@ export class EmailQueue extends TokenBase
 
 			const email = await Email.GetById(emailId);
 			return email;
+		} catch (e) {
+			throw e;
+		} finally {
+			client.release();
+		}
+	}
+
+	/**
+	 * Adds a new email token to the database.
+	 * @param email The email to associate with the token.
+	 * @returns The new generated token.
+	 */
+	public static async Add(email: Email): Promise<IEmailQueue>
+	{
+		const client = await DotComCore.Core.Connect();
+
+		try {
+			const token = TokenBase.GenerateToken() as IEmailQueue;
+
+			const query = await client.query(`INSERT INTO
+				verify_email_queue (id, val_key, eid)
+				VALUES ($1, $2, $3)
+				RETURNING created_at, expires_at`,
+				[
+					token.id,
+					token.validator,
+					email.id
+				]
+			);
+
+			
+			token.createdAt = query.rows[0].created_at;
+			token.expiresAt = query.rows[0].expires_at;
+			token.emailId = email.id;
+
+			return token;
 		} catch (e) {
 			throw e;
 		} finally {

@@ -30,6 +30,7 @@ import ejs from 'ejs';
 import { EmailQueue } from '../libraries/database/tokens/EmailQueue';
 import DotComCore from 'dotcomcore';
 import { Email } from '../libraries/database/Email';
+import { MailQueue } from '../libraries/database/MailQueue';
 
 
 const router = express.Router();
@@ -53,10 +54,38 @@ router.get('/', async (req, res, next) => {
 		res.rs.html.meta.setSubtitle('Sign Up');
 		res.rs.html.meta.description = 'Sign up for an account';
 
+		res.addToHead({
+			type: 'js',
+			source: 'https://js.hcaptcha.com/1/api.js'
+		});
+
 		if (req.query.token) {
-			if (!(await EmailQueue.ValidateToken(req.query.token as string))) {
+			const token = await EmailQueue.GetToken(req.query.token as string);
+
+			if (token === null) {
 				return next(httpError(403, 'Invalid token.'));
 			}
+
+			const email = await token.GetEmail();
+
+			res.addToHead(
+				{
+					type: 'js',
+					source: `/resources/js/signup-last-step.js`
+				}, {
+					type: 'link',
+					rel: 'preload',
+					source: '/resources/svg/eye-enable.svg',
+					as: 'image',
+					mimeType: 'image/svg+xml'
+				}, {
+					type: 'link',
+					rel: 'preload',
+					source: '/resources/svg/eye-disable.svg',
+					as: 'image',
+					mimeType: 'image/svg+xml'
+				}
+			);
 
 			const today = new Date();
 
@@ -69,7 +98,8 @@ router.get('/', async (req, res, next) => {
 			res.rs.html.body = await ejs.renderFile(res.getEJSPath('signup-last-step.ejs'), {
 				key: env.hcaptcha_keys.site_key,
 				min: min.toISOString().split('T')[0],
-				max: max.toISOString().split('T')[0]
+				max: max.toISOString().split('T')[0],
+				email: await email.Read(await email.GenericCryptoKey())
 			});
 
 			await res.renderDefault('layout-api-form.ejs', {
@@ -80,27 +110,10 @@ router.get('/', async (req, res, next) => {
 			return;
 		}
 
-		res.addToHead(
-			{
-				type: 'js',
-				source: 'https://js.hcaptcha.com/1/api.js'
-			}, {
-				type: 'js',
-				source: `/resources/js/signup-first-step.js`
-			}, {
-				type: 'link',
-				rel: 'preload',
-				source: '/resources/svg/eye-enable.svg',
-				as: 'image',
-				mimeType: 'image/svg+xml'
-			}, {
-				type: 'link',
-				rel: 'preload',
-				source: '/resources/svg/eye-disable.svg',
-				as: 'image',
-				mimeType: 'image/svg+xml'
-			}
-		);
+		res.addToHead({
+			type: 'js',
+			source: `/resources/js/signup-first-step.js`
+		});
 
 		// res.rs.form = {
 		// 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
@@ -166,7 +179,12 @@ async function genericChecker(req: Request, res: Response, next: NextFunction): 
 router.post('/email', async (req, res, next) =>
 {
 	try {
+		// #region Check if the request is valid
 		const result = await genericChecker(req, res, next);
+
+		if (typeof req.body.email !== 'string') {
+			return next(httpError(400, 'Invalid email.'));
+		}
 
 		if (result === -1) {
 			return;
@@ -174,10 +192,12 @@ router.post('/email', async (req, res, next) =>
 		if (result !== 0) {
 			return next(httpError(result, 'Something went wrong.'));
 		}
+		// #endregion
 	
 		const client = await DotComCore.Core.Connect();
-	
+
 		try {
+			// Check if the email is valid or not
 			if (!(await Email.VerifyIfValid(req.body.email))) {
 				return res.status(400).json({
 					'code': Errors.INVALID_EMAIL,
@@ -185,6 +205,22 @@ router.post('/email', async (req, res, next) =>
 				});
 			}
 
+			// Check if the email is already in use
+			if (await Email.Exists(req.body.email)) {
+				return;
+			}
+
+			// Add the email to the queue
+			const email = await Email.Set(req.body.email);
+			const token = await EmailQueue.Add(email);
+
+			const template = await MailQueue.GenerateTemplate('createAccount', req.body.email, {
+				link: `https://${env.domain}/signup?token=${token.id}.${token.originalValidator}`
+			});
+
+			await MailQueue.SendEmail(req.body.email, 'Continue your sign up', template);
+
+			// Send a success message
 			res.status(200).json({
 				'code': 0,
 				'message': 'OK'
@@ -202,122 +238,126 @@ router.post('/email', async (req, res, next) =>
 
 
 router.post('/', async (req, res, next) => {
-	const result = await genericChecker(req, res, next);
-
-	if (result === -1) {
-		return;
-	}
-	if (result !== 0) {
-		return next(httpError(result, 'Something went wrong.'));
-	}
-
-
-	const client = await pgConn.connect();
 	
-	try {
-		const body: SignUpBody = req.body;
-		if (typeof body.birthdate === 'string')
-			body.birthdate = Number.parseInt(body.birthdate);
-
-		if (!Schema.validate(SignUpSchema, body)) {
-			return res.status(400).json({
-				'code': Errors.INVALID_BODY,
-				'message': 'Something went wrong. Refresh the page and try again.'
-			});
-		}
-
-
-		// #region Check user data
-		body.username = body.username.trim();
-		body.email = body.email.trim();
-		const bday = new Date(body.birthdate);
-
-		if (!bday) {
-			res.status(400).json({
-				'code': Errors.INVALID_BIRTHDATE,
-				'message': 'Invalid birthdate.'
-			});
-			return;
-		}
-
-		bday.setHours(12, 0, 0, 0);
-		if (!RSTime.MinimumAge(bday)) {
-			return res.status(400).json({
-				'code': Errors.INVALID_BIRTHDATE,
-				'message': 'You must be at least 13 years old.'
-			});
-		}
-		if (bday.getTime() < Date.now() - RSTime._YEAR_ * 130) {
-			return res.status(400).json({
-				'code': Errors.INVALID_BIRTHDATE,
-				'message': 'Really funny, but you are not that old.'
-			});
-		}
-		if (!regex.handler.test(body.username)) {
-			return res.status(400).json({
-				'code': Errors.INVALID_USERNAME,
-				'message': 'Username can only contain letters, numbers, underscores and dashes.'
-			});
-		}
-		if (body.username.length < 3 || body.username.length > 16) {
-			return res.status(400).json({
-				'code': Errors.INVALID_USERNAME,
-				'message': 'Username must be between 3 and 16 characters.'
-			});
-		}
-		if (await LegacyUser.ExistsByHandler(body.username)) {
-			return res.status(400).json({
-				'code': Errors.INVALID_USERNAME,
-				'message': 'Username is already taken.'
-			});
-		}
-		if (zxcvbn(body.password).score <= 2) {
-			return res.status(400).json({
-				'code': Errors.INVALID_PASSWORD,
-				'message': 'Password is too weak.'
-			});
-		}
-		if (!await LegacyEmail.Validate(body.email)) {
-			return res.status(400).json({
-				'code': Errors.INVALID_EMAIL,
-				'message': 'Invalid email.'
-			});
-		}
-		// #endregion
-
-
-		await RSRandom.Wait(0, 150);
-
-		if (!await LegacyEmail.Exists(body.email)) {
-			const response = await LegacyUser.Set(body.username, body.email, body.password, bday);
-
-			if (response === LegacyUser.Code.INTERNAL_ERROR) return next(httpError(500, 'Something went wrong while signing up.'));
-
-			if (response === LegacyUser.Code.ALREADY_EXISTS) {
-				return res.status(403).json({
-					'code': Errors.INVALID_USERNAME,
-					'message': 'Username is already taken.'
-				});
-			}
-			if (response === LegacyUser.Code.MINOR) {
-				return res.status(403).json({
-					'code': Errors.INVALID_BIRTHDATE,
-					'message': 'You must be at least 8 years old.'
-				});
-			}
-		}
-
-
-		res.status(200).json({
-			'code': 0,
-			'message': 'OK'
-		})
-	} catch (e) {
-		logger.error(e);
-		next(httpError(500, e));
-	} finally {
-		client.release();
-	}
 });
+
+// router.post('/', async (req, res, next) => {
+// 	const result = await genericChecker(req, res, next);
+
+// 	if (result === -1) {
+// 		return;
+// 	}
+// 	if (result !== 0) {
+// 		return next(httpError(result, 'Something went wrong.'));
+// 	}
+
+
+// 	const client = await pgConn.connect();
+	
+// 	try {
+// 		const body: SignUpBody = req.body;
+// 		if (typeof body.birthdate === 'string')
+// 			body.birthdate = Number.parseInt(body.birthdate);
+
+// 		if (!Schema.validate(SignUpSchema, body)) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_BODY,
+// 				'message': 'Something went wrong. Refresh the page and try again.'
+// 			});
+// 		}
+
+
+// 		// #region Check user data
+// 		body.username = body.username.trim();
+// 		body.email = body.email.trim();
+// 		const bday = new Date(body.birthdate);
+
+// 		if (!bday) {
+// 			res.status(400).json({
+// 				'code': Errors.INVALID_BIRTHDATE,
+// 				'message': 'Invalid birthdate.'
+// 			});
+// 			return;
+// 		}
+
+// 		bday.setHours(12, 0, 0, 0);
+// 		if (!RSTime.MinimumAge(bday)) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_BIRTHDATE,
+// 				'message': 'You must be at least 13 years old.'
+// 			});
+// 		}
+// 		if (bday.getTime() < Date.now() - RSTime._YEAR_ * 130) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_BIRTHDATE,
+// 				'message': 'Really funny, but you are not that old.'
+// 			});
+// 		}
+// 		if (!regex.handler.test(body.username)) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_USERNAME,
+// 				'message': 'Username can only contain letters, numbers, underscores and dashes.'
+// 			});
+// 		}
+// 		if (body.username.length < 3 || body.username.length > 16) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_USERNAME,
+// 				'message': 'Username must be between 3 and 16 characters.'
+// 			});
+// 		}
+// 		if (await LegacyUser.ExistsByHandler(body.username)) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_USERNAME,
+// 				'message': 'Username is already taken.'
+// 			});
+// 		}
+// 		if (zxcvbn(body.password).score <= 2) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_PASSWORD,
+// 				'message': 'Password is too weak.'
+// 			});
+// 		}
+// 		if (!await LegacyEmail.Validate(body.email)) {
+// 			return res.status(400).json({
+// 				'code': Errors.INVALID_EMAIL,
+// 				'message': 'Invalid email.'
+// 			});
+// 		}
+// 		// #endregion
+
+
+// 		await RSRandom.Wait(0, 150);
+
+// 		if (!await LegacyEmail.Exists(body.email)) {
+// 			const response = await LegacyUser.Set(body.username, body.email, body.password, bday);
+
+// 			if (response === LegacyUser.Code.INTERNAL_ERROR) return next(httpError(500, 'Something went wrong while signing up.'));
+
+// 			if (response === LegacyUser.Code.ALREADY_EXISTS) {
+// 				return res.status(403).json({
+// 					'code': Errors.INVALID_USERNAME,
+// 					'message': 'Username is already taken.'
+// 				});
+// 			}
+// 			if (response === LegacyUser.Code.MINOR) {
+// 				return res.status(403).json({
+// 					'code': Errors.INVALID_BIRTHDATE,
+// 					'message': 'You must be at least 8 years old.'
+// 				});
+// 			}
+// 		}
+
+
+// 		res.status(200).json({
+// 			'code': 0,
+// 			'message': 'OK'
+// 		})
+// 	} catch (e) {
+// 		logger.error(e);
+// 		next(httpError(500, e));
+// 	} finally {
+// 		client.release();
+// 	}
+// });
 
 export = router;

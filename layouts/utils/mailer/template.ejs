@@ -1,0 +1,37 @@
+<%
+	/*
+		robotoskunk.com - The whole main website of RobotoSkunk.
+		Copyright (C) 2023 Edgar Alexis Lima <contact@robotoskunk.com>
+
+		This program is free software: you can redistribute it and/or modify
+		it under the terms of the GNU Affero General Public License as published
+		by the Free Software Foundation, either version 3 of the License, or
+		(at your option) any later version.
+
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		GNU Affero General Public License for more details.
+
+		You should have received a copy of the GNU Affero General Public License
+		along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	*/
+-%>
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<div style="font-family: sans-serif; background-color: #f0f0f0; padding: 25px; text-align: center">
+	<img src="https://<%= websiteDomain %>/resources/img/logo-512.webp" alt="RobotoSkunk's logo" width="150px">
+	<table style="background-color: white; text-align: left; padding: 15px; margin: 15px auto; width: 95%; max-width: 750px">
+		<tbody>
+			<tr>
+				<td>
+					<%- body %>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<p style="margin-bottom: 15px">This email has been sent to <%= recipient %>.
+	<p style="margin-bottom: 5px">RobotoSkunk Poza Rica de Hidalgo, Veracruz, México.
+	<p style="margin-bottom: 50px"><a href="https://<%= websiteDomain %>" style="color: #555555"><%= websiteDomain %></a>
+</div>

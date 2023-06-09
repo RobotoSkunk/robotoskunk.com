@@ -58,6 +58,16 @@ class Email extends DotComEmail {
         });
     }
     // #endregion
+    static GenerateGenericCryptoKey(hash) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield RSEngine_1.RSCrypto.PBKDF2(dotcomcore_1.default.Core.encryptionKey, hash, 1000, 32);
+        });
+    }
+    GenericCryptoKey() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield Email.GenerateGenericCryptoKey(this.hash);
+        });
+    }
     /**
      * Creates a new email address in the database.
      * @param email The email address to add.
@@ -76,7 +86,7 @@ class Email extends DotComEmail {
                 var encryptedEmail;
                 // If the user doesn't exist, use the main encryption key.
                 if (!userId) {
-                    const encryptionKey = yield RSEngine_1.RSCrypto.PBKDF2(dotcomcore_1.default.Core.encryptionKey, hash, 1000, 32);
+                    const encryptionKey = yield Email.GenerateGenericCryptoKey(hash);
                     encryptedEmail = yield RSEngine_1.RSCrypto.Encrypt(email, encryptionKey);
                 }
                 else {
@@ -84,13 +94,25 @@ class Email extends DotComEmail {
                     const user = yield User_1.User.GetById(userId);
                     encryptedEmail = yield RSEngine_1.RSCrypto.Encrypt(email, yield user.GetCryptoKey());
                 }
-                yield client.query(`INSERT INTO emails (hash, email, usrid, refer) VALUES ($1, $2, $3, $4)`, [
+                const query = yield client.query(`INSERT INTO
+				emails (hash, email, usrid, refer)
+				VALUES ($1, $2, $3, $4)
+				RETURNING id`, [
                     hash,
                     encryptedEmail,
                     userId || null,
                     type
                 ]);
-                return;
+                return new Email({
+                    id: query.rows[0].id,
+                    hash: hash,
+                    email: encryptedEmail,
+                    userId: userId || null,
+                    type: type,
+                    verified: false,
+                    createdAt: new Date(),
+                    isFake: false
+                });
             }
             catch (e) {
                 throw e;

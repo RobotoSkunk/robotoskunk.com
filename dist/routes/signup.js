@@ -31,15 +31,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const globals_1 = require("../globals");
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
-const db_1 = require("../libraries/db");
 const http_errors_1 = __importDefault(require("http-errors"));
-const schema_1 = require("../libraries/schema");
-const zxcvbn_1 = require("../libraries/zxcvbn");
 const rateLimiter_1 = require("../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const EmailQueue_1 = require("../libraries/database/tokens/EmailQueue");
 const dotcomcore_1 = __importDefault(require("dotcomcore"));
 const Email_1 = require("../libraries/database/Email");
+const MailQueue_1 = require("../libraries/database/MailQueue");
 const router = express_1.default.Router();
 var Errors;
 (function (Errors) {
@@ -56,10 +54,32 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         res.rs.html.meta.setSubtitle('Sign Up');
         res.rs.html.meta.description = 'Sign up for an account';
+        res.addToHead({
+            type: 'js',
+            source: 'https://js.hcaptcha.com/1/api.js'
+        });
         if (req.query.token) {
-            if (!(yield EmailQueue_1.EmailQueue.ValidateToken(req.query.token))) {
+            const token = yield EmailQueue_1.EmailQueue.GetToken(req.query.token);
+            if (token === null) {
                 return next((0, http_errors_1.default)(403, 'Invalid token.'));
             }
+            const email = yield token.GetEmail();
+            res.addToHead({
+                type: 'js',
+                source: `/resources/js/signup-last-step.js`
+            }, {
+                type: 'link',
+                rel: 'preload',
+                source: '/resources/svg/eye-enable.svg',
+                as: 'image',
+                mimeType: 'image/svg+xml'
+            }, {
+                type: 'link',
+                rel: 'preload',
+                source: '/resources/svg/eye-disable.svg',
+                as: 'image',
+                mimeType: 'image/svg+xml'
+            });
             const today = new Date();
             const max = new Date();
             const min = new Date();
@@ -68,7 +88,8 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             res.rs.html.body = yield ejs_1.default.renderFile(res.getEJSPath('signup-last-step.ejs'), {
                 key: globals_1.env.hcaptcha_keys.site_key,
                 min: min.toISOString().split('T')[0],
-                max: max.toISOString().split('T')[0]
+                max: max.toISOString().split('T')[0],
+                email: yield email.Read(yield email.GenericCryptoKey())
             });
             yield res.renderDefault('layout-api-form.ejs', {
                 denyIfLoggedIn: true,
@@ -78,22 +99,7 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         }
         res.addToHead({
             type: 'js',
-            source: 'https://js.hcaptcha.com/1/api.js'
-        }, {
-            type: 'js',
             source: `/resources/js/signup-first-step.js`
-        }, {
-            type: 'link',
-            rel: 'preload',
-            source: '/resources/svg/eye-enable.svg',
-            as: 'image',
-            mimeType: 'image/svg+xml'
-        }, {
-            type: 'link',
-            rel: 'preload',
-            source: '/resources/svg/eye-disable.svg',
-            as: 'image',
-            mimeType: 'image/svg+xml'
         });
         // res.rs.form = {
         // 	'bg': `<div class="bg-image" style="background-image: url('/resources/svg/alex-skunk/sandbox.svg');"></div><div class="bg-filter"></div>`
@@ -147,21 +153,39 @@ function genericChecker(req, res, next) {
 }
 router.post('/email', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // #region Check if the request is valid
         const result = yield genericChecker(req, res, next);
+        if (typeof req.body.email !== 'string') {
+            return next((0, http_errors_1.default)(400, 'Invalid email.'));
+        }
         if (result === -1) {
             return;
         }
         if (result !== 0) {
             return next((0, http_errors_1.default)(result, 'Something went wrong.'));
         }
+        // #endregion
         const client = yield dotcomcore_1.default.Core.Connect();
         try {
+            // Check if the email is valid or not
             if (!(yield Email_1.Email.VerifyIfValid(req.body.email))) {
                 return res.status(400).json({
                     'code': Errors.INVALID_EMAIL,
                     'message': 'Invalid email.'
                 });
             }
+            // Check if the email is already in use
+            if (yield Email_1.Email.Exists(req.body.email)) {
+                return;
+            }
+            // Add the email to the queue
+            const email = yield Email_1.Email.Set(req.body.email);
+            const token = yield EmailQueue_1.EmailQueue.Add(email);
+            const template = yield MailQueue_1.MailQueue.GenerateTemplate('createAccount', req.body.email, {
+                link: `https://${globals_1.env.domain}/signup?token=${token.id}.${token.originalValidator}`
+            });
+            yield MailQueue_1.MailQueue.SendEmail(req.body.email, 'Continue your sign up', template);
+            // Send a success message
             res.status(200).json({
                 'code': 0,
                 'message': 'OK'
@@ -180,109 +204,6 @@ router.post('/email', (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 }));
 router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield genericChecker(req, res, next);
-    if (result === -1) {
-        return;
-    }
-    if (result !== 0) {
-        return next((0, http_errors_1.default)(result, 'Something went wrong.'));
-    }
-    const client = yield db_1.pgConn.connect();
-    try {
-        const body = req.body;
-        if (typeof body.birthdate === 'string')
-            body.birthdate = Number.parseInt(body.birthdate);
-        if (!schema_1.Schema.validate(schema_1.SignUpSchema, body)) {
-            return res.status(400).json({
-                'code': Errors.INVALID_BODY,
-                'message': 'Something went wrong. Refresh the page and try again.'
-            });
-        }
-        // #region Check user data
-        body.username = body.username.trim();
-        body.email = body.email.trim();
-        const bday = new Date(body.birthdate);
-        if (!bday) {
-            res.status(400).json({
-                'code': Errors.INVALID_BIRTHDATE,
-                'message': 'Invalid birthdate.'
-            });
-            return;
-        }
-        bday.setHours(12, 0, 0, 0);
-        if (!RSEngine_1.RSTime.MinimumAge(bday)) {
-            return res.status(400).json({
-                'code': Errors.INVALID_BIRTHDATE,
-                'message': 'You must be at least 13 years old.'
-            });
-        }
-        if (bday.getTime() < Date.now() - RSEngine_1.RSTime._YEAR_ * 130) {
-            return res.status(400).json({
-                'code': Errors.INVALID_BIRTHDATE,
-                'message': 'Really funny, but you are not that old.'
-            });
-        }
-        if (!globals_1.regex.handler.test(body.username)) {
-            return res.status(400).json({
-                'code': Errors.INVALID_USERNAME,
-                'message': 'Username can only contain letters, numbers, underscores and dashes.'
-            });
-        }
-        if (body.username.length < 3 || body.username.length > 16) {
-            return res.status(400).json({
-                'code': Errors.INVALID_USERNAME,
-                'message': 'Username must be between 3 and 16 characters.'
-            });
-        }
-        if (yield db_1.LegacyUser.ExistsByHandler(body.username)) {
-            return res.status(400).json({
-                'code': Errors.INVALID_USERNAME,
-                'message': 'Username is already taken.'
-            });
-        }
-        if ((0, zxcvbn_1.zxcvbn)(body.password).score <= 2) {
-            return res.status(400).json({
-                'code': Errors.INVALID_PASSWORD,
-                'message': 'Password is too weak.'
-            });
-        }
-        if (!(yield db_1.LegacyEmail.Validate(body.email))) {
-            return res.status(400).json({
-                'code': Errors.INVALID_EMAIL,
-                'message': 'Invalid email.'
-            });
-        }
-        // #endregion
-        yield RSEngine_1.RSRandom.Wait(0, 150);
-        if (!(yield db_1.LegacyEmail.Exists(body.email))) {
-            const response = yield db_1.LegacyUser.Set(body.username, body.email, body.password, bday);
-            if (response === db_1.LegacyUser.Code.INTERNAL_ERROR)
-                return next((0, http_errors_1.default)(500, 'Something went wrong while signing up.'));
-            if (response === db_1.LegacyUser.Code.ALREADY_EXISTS) {
-                return res.status(403).json({
-                    'code': Errors.INVALID_USERNAME,
-                    'message': 'Username is already taken.'
-                });
-            }
-            if (response === db_1.LegacyUser.Code.MINOR) {
-                return res.status(403).json({
-                    'code': Errors.INVALID_BIRTHDATE,
-                    'message': 'You must be at least 8 years old.'
-                });
-            }
-        }
-        res.status(200).json({
-            'code': 0,
-            'message': 'OK'
-        });
-    }
-    catch (e) {
-        globals_1.logger.error(e);
-        next((0, http_errors_1.default)(500, e));
-    }
-    finally {
-        client.release();
-    }
 }));
 module.exports = router;
 //# sourceMappingURL=signup.js.map
