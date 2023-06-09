@@ -120,6 +120,42 @@ declare global
 			addToHead(... elements: RobotoSkunk.HeadOptions[]): void;
 		}
 	}
+
+	namespace NodeJS {
+		interface ProcessEnv {
+			EMAIL_HOST: string;
+			EMAIL_AUTH_USER: string;
+			EMAIL_AUTH_PASSWORD: string;
+			EMAIL_NAME: string;
+			EMAIL_PORT: string;
+			EMAIL_SECURE: string;
+
+			PAYPAL_ID: string;
+			PAYPAL_SECRET: string;
+
+			HCAPTCHA_SITE_KEY: string;
+			HCAPTCHA_SECRET_KEY: string;
+
+			PSQL_HOST: string;
+			PSQL_USER: string;
+			PSQL_DB: string;
+			PSQL_PASSWORD?: string;
+
+			RTLM_HOST: string;
+			RTLM_USER: string;
+			RTLM_DB: string;
+			RTLM_PASSWORD?: string;
+
+			NODE_ENV: 'development' | 'production';
+
+			MASTER_KEY: string;
+			RATE_LIMITER_KEY: string;
+			HMAC_KEY: string;
+			SALT_KEY: string;
+
+			TZ?: string;
+		}
+	}
 }
 // #endregion
 
