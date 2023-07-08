@@ -87,6 +87,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         const date = new Date(data.get('birthdate').toString());
         data.delete('birthdate');
         data.append('birthdate', date.getTime().toString());
+        const url = new URL(window.location.href);
+        data.append('token', url.searchParams.get('token'));
         if (data.get('password') === '') {
             yield apiForm.hide();
             apiForm.showSection(1);
@@ -97,7 +99,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         else {
             try {
-                const response = yield fetch('/accounts/signup', {
+                const response = yield fetch('/signup', {
                     'method': 'POST',
                     'body': new URLSearchParams(data)
                 });

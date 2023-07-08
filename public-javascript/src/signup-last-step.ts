@@ -119,6 +119,9 @@
 		data.delete('birthdate');
 		data.append('birthdate', date.getTime().toString());
 
+		const url = new URL(window.location.href);
+		data.append('token', url.searchParams.get('token') as string);
+
 
 		if (data.get('password') === '') {
 			await apiForm.hide();
@@ -130,7 +133,7 @@
 
 		} else {
 			try {
-				const response = await fetch('/accounts/signup', {
+				const response = await fetch('/signup', {
 					'method': 'POST',
 					'body': new URLSearchParams(data as any)
 				});

@@ -31,6 +31,7 @@ import { EmailQueue } from '../libraries/database/tokens/EmailQueue';
 import DotComCore from 'dotcomcore';
 import { Email } from '../libraries/database/Email';
 import { MailQueue } from '../libraries/database/MailQueue';
+import { User } from '../libraries/database/User';
 
 
 const router = express.Router();
@@ -156,7 +157,7 @@ async function genericChecker(req: Request, res: Response, next: NextFunction): 
 	const body: SignUpBody = req.body;
 
 	// #region Check captcha
-	var validRecaptcha = true;
+	var validRecaptcha = false;
 
 	if (body['h-captcha-response']) {
 		validRecaptcha = await RSUtils.VerifyCaptcha(body['h-captcha-response'], env.hcaptcha_keys.secret_key);
@@ -237,8 +238,108 @@ router.post('/email', async (req, res, next) =>
 });
 
 
-router.post('/', async (req, res, next) => {
-	
+router.post('/', async (req, res, next) =>
+{
+	try {
+		// #region Check if the request is valid
+		const result = await genericChecker(req, res, next);
+
+		const required = ['username', 'password', 'birthdate', 'token'];
+
+		for (const r of required) {
+			if (typeof req.body[r] !== 'string') {
+				return next(httpError(400, 'Invalid body.'));
+			}
+		}
+
+		if (result === -1) {
+			return;
+		}
+		if (result !== 0) {
+			return next(httpError(result, 'Something went wrong.'));
+		}
+
+
+		const token = await EmailQueue.GetToken(req.body.token);
+
+		if (token === null) {
+			return next(httpError(403, 'Invalid token.'));
+		}
+
+
+		const birthdateTimestamp = Number.parseInt(req.body.birthdate);
+
+		if (Number.isNaN(birthdateTimestamp)) {
+			return next(httpError(400, 'Invalid birthdate.'));
+		}
+
+		const birthdate = new Date(birthdateTimestamp);
+
+		if (!birthdate) {
+			return next(httpError(400, 'Invalid birthdate.'));
+		}
+
+		birthdate.setHours(12, 0, 0, 0);
+		if (!RSTime.MinimumAge(birthdate)) {
+			return res.status(400).json({
+				'code': Errors.INVALID_BIRTHDATE,
+				'message': 'You must be at least 13 years old.'
+			});
+		}
+
+		if (birthdate.getTime() < Date.now() - RSTime._YEAR_ * 130) {
+			return res.status(400).json({
+				'code': Errors.INVALID_BIRTHDATE,
+				'message': 'Really funny, but you are not that old.'
+			});
+		}
+
+
+		if (!regex.handler.test(req.body.username)) {
+			return res.status(400).json({
+				'code': Errors.INVALID_USERNAME,
+				'message': 'Username can only contain letters, numbers, underscores and dashes.'
+			});
+		}
+
+		if (req.body.username.length < 3 || req.body.username.length > 16) {
+			return res.status(400).json({
+				'code': Errors.INVALID_USERNAME,
+				'message': 'Username must be between 3 and 16 characters.'
+			});
+		}
+
+		if (await User.ExistsByHandler(req.body.username)) {
+			return res.status(400).json({
+				'code': Errors.INVALID_USERNAME,
+				'message': 'Username is already taken.'
+			});
+		}
+
+		if (zxcvbn(req.body.password).score <= 2) {
+			return res.status(400).json({
+				'code': Errors.INVALID_PASSWORD,
+				'message': 'Password is too weak.'
+			});
+		}
+		// #endregion
+
+
+		await RSRandom.Wait(0, 150);
+
+		const email = await token.GetEmail();
+
+		if (!email.userId) {
+			User.Set(req.body.username, email.id, req.body.password, birthdate);
+		}
+
+		res.status(200).json({
+			'code': 0,
+			'message': 'OK'
+		});
+	} catch (e) {
+		next(httpError(500, e));
+	}
 });
 
 // router.post('/', async (req, res, next) => {

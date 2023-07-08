@@ -18,10 +18,11 @@
 
 
 import DotComCore from 'dotcomcore';
-import { RSTime } from 'dotcomcore/dist/RSEngine';
+import { RSCrypto, RSTime } from 'dotcomcore/dist/RSEngine';
 
 import crypto from 'crypto';
 import argon2 from 'argon2';
+import { Email } from './Email';
 
 const DotComUser = DotComCore.User;
 
@@ -60,8 +61,16 @@ export class User extends DotComUser
 				]
 			);
 
-			await client.query(`UPDATE emails SET usrid = $1 WHERE id = $2`, [
+			const email = await Email.GetById(emailId);
+			if (!email) return User.SignUpCode.INTERNAL_ERROR;
+			
+			const originalEmail = await email.Read(await email.GenericCryptoKey());
+			const encryptedEmail = await RSCrypto.Encrypt(originalEmail, await User.GenerateCryptoKey(hash));
+
+
+			await client.query(`UPDATE emails SET usrid = $1, email = $2 WHERE id = $3`, [
 				query.rows[0].id,
+				encryptedEmail,
 				emailId
 			]);
 

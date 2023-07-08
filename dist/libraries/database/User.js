@@ -34,6 +34,7 @@ const dotcomcore_1 = __importDefault(require("dotcomcore"));
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const crypto_1 = __importDefault(require("crypto"));
 const argon2_1 = __importDefault(require("argon2"));
+const Email_1 = require("./Email");
 const DotComUser = dotcomcore_1.default.User;
 class User extends DotComUser {
     /**
@@ -63,8 +64,14 @@ class User extends DotComUser {
                     pwrd,
                     birthdate
                 ]);
-                yield client.query(`UPDATE emails SET usrid = $1 WHERE id = $2`, [
+                const email = yield Email_1.Email.GetById(emailId);
+                if (!email)
+                    return User.SignUpCode.INTERNAL_ERROR;
+                const originalEmail = yield email.Read(yield email.GenericCryptoKey());
+                const encryptedEmail = yield RSEngine_1.RSCrypto.Encrypt(originalEmail, yield User.GenerateCryptoKey(hash));
+                yield client.query(`UPDATE emails SET usrid = $1, email = $2 WHERE id = $3`, [
                     query.rows[0].id,
+                    encryptedEmail,
                     emailId
                 ]);
                 return User.SignUpCode.SUCCESS;

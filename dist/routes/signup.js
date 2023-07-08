@@ -32,12 +32,14 @@ const express_1 = __importDefault(require("express"));
 const globals_1 = require("../globals");
 const RSEngine_1 = require("dotcomcore/dist/RSEngine");
 const http_errors_1 = __importDefault(require("http-errors"));
+const zxcvbn_1 = require("../libraries/zxcvbn");
 const rateLimiter_1 = require("../libraries/rateLimiter");
 const ejs_1 = __importDefault(require("ejs"));
 const EmailQueue_1 = require("../libraries/database/tokens/EmailQueue");
 const dotcomcore_1 = __importDefault(require("dotcomcore"));
 const Email_1 = require("../libraries/database/Email");
 const MailQueue_1 = require("../libraries/database/MailQueue");
+const User_1 = require("../libraries/database/User");
 const router = express_1.default.Router();
 var Errors;
 (function (Errors) {
@@ -136,7 +138,7 @@ function genericChecker(req, res, next) {
         }
         const body = req.body;
         // #region Check captcha
-        var validRecaptcha = true;
+        var validRecaptcha = false;
         if (body['h-captcha-response']) {
             validRecaptcha = yield RSEngine_1.RSUtils.VerifyCaptcha(body['h-captcha-response'], globals_1.env.hcaptcha_keys.secret_key);
         }
@@ -204,6 +206,84 @@ router.post('/email', (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 }));
 router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // #region Check if the request is valid
+        const result = yield genericChecker(req, res, next);
+        const required = ['username', 'password', 'birthdate', 'token'];
+        for (const r of required) {
+            if (typeof req.body[r] !== 'string') {
+                return next((0, http_errors_1.default)(400, 'Invalid body.'));
+            }
+        }
+        if (result === -1) {
+            return;
+        }
+        if (result !== 0) {
+            return next((0, http_errors_1.default)(result, 'Something went wrong.'));
+        }
+        const token = yield EmailQueue_1.EmailQueue.GetToken(req.body.token);
+        if (token === null) {
+            return next((0, http_errors_1.default)(403, 'Invalid token.'));
+        }
+        const birthdateTimestamp = Number.parseInt(req.body.birthdate);
+        if (Number.isNaN(birthdateTimestamp)) {
+            return next((0, http_errors_1.default)(400, 'Invalid birthdate.'));
+        }
+        const birthdate = new Date(birthdateTimestamp);
+        if (!birthdate) {
+            return next((0, http_errors_1.default)(400, 'Invalid birthdate.'));
+        }
+        birthdate.setHours(12, 0, 0, 0);
+        if (!RSEngine_1.RSTime.MinimumAge(birthdate)) {
+            return res.status(400).json({
+                'code': Errors.INVALID_BIRTHDATE,
+                'message': 'You must be at least 13 years old.'
+            });
+        }
+        if (birthdate.getTime() < Date.now() - RSEngine_1.RSTime._YEAR_ * 130) {
+            return res.status(400).json({
+                'code': Errors.INVALID_BIRTHDATE,
+                'message': 'Really funny, but you are not that old.'
+            });
+        }
+        if (!globals_1.regex.handler.test(req.body.username)) {
+            return res.status(400).json({
+                'code': Errors.INVALID_USERNAME,
+                'message': 'Username can only contain letters, numbers, underscores and dashes.'
+            });
+        }
+        if (req.body.username.length < 3 || req.body.username.length > 16) {
+            return res.status(400).json({
+                'code': Errors.INVALID_USERNAME,
+                'message': 'Username must be between 3 and 16 characters.'
+            });
+        }
+        if (yield User_1.User.ExistsByHandler(req.body.username)) {
+            return res.status(400).json({
+                'code': Errors.INVALID_USERNAME,
+                'message': 'Username is already taken.'
+            });
+        }
+        if ((0, zxcvbn_1.zxcvbn)(req.body.password).score <= 2) {
+            return res.status(400).json({
+                'code': Errors.INVALID_PASSWORD,
+                'message': 'Password is too weak.'
+            });
+        }
+        // #endregion
+        yield RSEngine_1.RSRandom.Wait(0, 150);
+        const email = yield token.GetEmail();
+        if (!email.userId) {
+            User_1.User.Set(req.body.username, email.id, req.body.password, birthdate);
+        }
+        res.status(200).json({
+            'code': 0,
+            'message': 'OK'
+        });
+    }
+    catch (e) {
+        next((0, http_errors_1.default)(500, e));
+    }
 }));
 module.exports = router;
 //# sourceMappingURL=signup.js.map
