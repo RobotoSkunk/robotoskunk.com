@@ -1,19 +1,32 @@
 {
-	"compileOnSave": true,
 	"compilerOptions": {
-		"outDir": "dist",
-		"target": "ES6",
+		"lib": ["ESNext"],
+		"module": "esnext",
+		"target": "esnext",
+		"moduleResolution": "bundler",
+		"moduleDetection": "force",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"composite": true,
+		"strict": true,
+		"downlevelIteration": true,
+		"skipLibCheck": true,
+		"jsx": "preserve",
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
 		"allowJs": true,
-		"module": "commonjs",
-		"esModuleInterop": true,
-		"resolveJsonModule": true,
-		"moduleResolution": "node",
-		"sourceMap": true
+		"types": [
+			"bun-types",
+			"./types/index.d.ts"
+		]
 	},
-	"include": [
-		"src/**/*"
-	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		".vscode"
+	],
+	"include": [
+		"**/*.ts",
+		"**/*.js",
+		"**/*.json"
 	]
 }

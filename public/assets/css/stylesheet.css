@@ -1,0 +1,126 @@
+/*
+	personal-website - The personal website of RobotoSkunk
+	Copyright (C) 2023 Edgar Alexis Lima <contact@robotoskunk.com>
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Affero General Public License as published
+	by the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Affero General Public License for more details.
+
+	You should have received a copy of the GNU Affero General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@import url('/assets/css/fonts/roboto.css');
+
+
+html {
+	overflow-x: hidden;
+}
+
+body {
+	background-color: black;
+	color: white;
+
+	font-family: 'Roboto', sans-serif;
+
+	margin: 0;
+	padding: 0;
+
+	width: 100vw;
+	min-height: 100vh;
+
+	font-size: 1.2em;
+}
+
+
+body > .container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	width: 100%;
+	min-height: 100vh;
+}
+
+
+header {
+	position: relative;
+
+	width: 100%;
+	padding: 1em 0;
+
+	font-size: 1.5em;
+	text-align: center;
+}
+
+header a {
+	color: white;
+	text-decoration: none;
+
+	font-weight: bold;
+
+	position: relative;
+
+	margin: 0 1em;
+}
+
+header a::after {
+	content: '';
+	display: block;
+
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+
+	width: 0;
+	height: 2px;
+
+	background-color: white;
+
+	transition: width 0.3s ease-in-out;
+}
+
+header a:hover::after {
+	width: 100%;
+}
+
+main {
+	position: relative;
+
+	flex-grow: 1;
+	width: 100%;
+}
+
+
+a svg * {
+	transition: fill 0.2s ease;
+}
+
+
+a:hover.facebook svg > circle,
+a:focus.facebook svg > circle { fill: white }
+
+a:hover.facebook svg > path,
+a:focus.facebook svg > path { fill: #1877f2 }
+
+a:hover.twitter svg > path,
+a:focus.twitter svg > path { fill: #1da1f2 }
+
+a:hover.discord svg > path,
+a:focus.discord svg > path { fill: #5865f2 }
+
+a:hover.youtube svg > rect,
+a:focus.youtube svg > rect { fill: white }
+a:hover.youtube svg > path,
+a:focus.youtube svg > path { fill: red }
+
+a:hover.generic svg > path,
+a:focus.generic svg > path { fill: #aaa }

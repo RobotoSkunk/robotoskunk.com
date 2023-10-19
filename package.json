@@ -1,84 +1,46 @@
 {
-	"name": "robotoskunk.com",
-	"version": "2.1.0",
-	"description": "Main website",
-	"main": "dist/index.js",
-	"types": "src/types/index.d.ts",
-	"scripts": {
-		"start": "pm2 start pm2.config.js --env production",
-		"debug": "nodemon .",
-		"pm2dev": "pm2 start pm2.dev.config.js --env development",
-		"mailer": "pm2 start pm2.mailer.config.js --env production",
-		"build": "tsc",
-		"build:dev": "tsc -w",
-		"setup": "npm i && npm run build"
-	},
-	"keywords": [
-		"website",
-		"skunk"
-	],
-	"author": "robotoskunk",
-	"license": "ISC",
-	"dependencies": {
-		"@zxcvbn-ts/core": "^3.0.2",
-		"@zxcvbn-ts/language-common": "^3.0.3",
-		"@zxcvbn-ts/language-en": "^3.0.1",
-		"@zxcvbn-ts/language-es-es": "^3.0.1",
-		"@zxcvbn-ts/language-fr": "^3.0.1",
-		"@zxcvbn-ts/language-pt-br": "^3.0.1",
-		"argon2": "^0.30.3",
-		"bcrypt": "^5.1.0",
-		"clean-css": "^5.3.2",
-		"compression": "^1.7.4",
-		"cookie-parser": "^1.4.6",
-		"cors": "^2.8.5",
-		"dotenv": "^16.3.1",
-		"ejs": "^3.1.9",
-		"express": "^4.18.2",
-		"express-useragent": "^1.0.15",
-		"helmet": "^7.0.0",
-		"http-errors": "^2.0.0",
-		"morgan": "^1.10.0",
-		"nodemailer": "^6.9.3",
-		"on-headers": "^1.0.2",
-		"otplib": "^12.0.1",
-		"pg": "^8.11.1",
-		"qrcode": "^1.5.3",
-		"rate-limiter-flexible": "^2.4.1",
-		"recursive-routing": "^1.2.1",
-		"safe-stable-stringify": "^2.4.3",
-		"source-map-support": "^0.5.21",
-		"svg-pan-zoom": "^3.6.1",
-		"uglify-js": "^3.17.4",
-		"winston": "^3.9.0"
-	},
-	"devDependencies": {
-		"@types/bcrypt": "^5.0.0",
-		"@types/clean-css": "^4.2.6",
-		"@types/compression": "^1.7.2",
-		"@types/cookie-parser": "^1.4.3",
-		"@types/cors": "^2.8.13",
-		"@types/ejs": "^3.1.2",
-		"@types/express-minify": "^0.1.35",
-		"@types/express-useragent": "^1.0.2",
-		"@types/http-errors": "^2.0.1",
-		"@types/morgan": "^1.9.4",
-		"@types/mysql": "^2.15.21",
-		"@types/node": "^20.4.0",
-		"@types/nodemailer": "^6.4.8",
-		"@types/on-headers": "^1.0.0",
-		"@types/pg": "^8.10.2",
-		"@types/qrcode": "^1.5.1",
-		"@types/uglify-js": "^3.17.1",
-		"@types/websocket": "^1.0.5"
-	},
-	"nodemonConfig": {
-		"watch": [
-			"dist/"
-		],
-		"delay": "250",
-		"env": {
-			"NODE_ENV": "development"
-		}
-	}
+  "name": "robotoskunk.com",
+  "version": "0.1.0",
+  "author": "robotoskunk",
+  "module": "index.ts",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "w": "bun --watch ."
+  },
+  "license": "AGPL-3.0",
+  "type": "module",
+  "dependencies": {
+    "clean-css": "^5.3.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-useragent": "^1.0.15",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "on-headers": "^1.0.2",
+    "pg": "^8.11.3",
+    "rate-limiter-flexible": "^3.0.1",
+    "safe-stable-stringify": "^2.4.3",
+    "uglify-js": "^3.17.4",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/clean-css": "^4.2.8",
+    "@types/compression": "^1.7.3",
+    "@types/cookie-parser": "^1.4.4",
+    "@types/cors": "^2.8.14",
+    "@types/ejs": "^3.1.3",
+    "@types/express": "^4.17.19",
+    "@types/express-useragent": "^1.0.3",
+    "@types/morgan": "^1.9.6",
+    "@types/on-headers": "^1.0.1",
+    "@types/pg": "^8.10.5",
+    "@types/uglify-js": "^3.17.2",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }
