@@ -54,52 +54,42 @@ router.get('/:user/:page', (req, res, next) => __awaiter(void 0, void 0, void 0,
             return next((0, http_errors_1.default)(400, 'Invalid page'));
         const shouts = [];
         try {
-            for (var _g = true, _h = __asyncValues(db_1.Shout.GetByVictim(victim.id, page)), _j; _j = yield _h.next(), _a = _j.done, !_a;) {
+            for (var _g = true, _h = __asyncValues(db_1.Shout.GetByVictim(victim.id, page)), _j; _j = yield _h.next(), _a = _j.done, !_a; _g = true) {
                 _c = _j.value;
                 _g = false;
+                const shout = _c;
+                const author = yield db_1.User.GetById(shout.author);
+                const editHistory = [];
                 try {
-                    const shout = _c;
-                    const author = yield db_1.User.GetById(shout.author);
-                    const editHistory = [];
-                    try {
-                        for (var _k = true, _l = (e_2 = void 0, __asyncValues(shout.GetEdits())), _m; _m = yield _l.next(), _d = _m.done, !_d;) {
-                            _f = _m.value;
-                            _k = false;
-                            try {
-                                const edit = _f;
-                                editHistory.push({
-                                    content: edit.content,
-                                    created_at: relativeTime(edit.createdAt)
-                                });
-                            }
-                            finally {
-                                _k = true;
-                            }
-                        }
+                    for (var _k = true, _l = (e_2 = void 0, __asyncValues(shout.GetEdits())), _m; _m = yield _l.next(), _d = _m.done, !_d; _k = true) {
+                        _f = _m.value;
+                        _k = false;
+                        const edit = _f;
+                        editHistory.push({
+                            content: edit.content,
+                            created_at: relativeTime(edit.createdAt)
+                        });
                     }
-                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                    finally {
-                        try {
-                            if (!_k && !_d && (_e = _l.return)) yield _e.call(_l);
-                        }
-                        finally { if (e_2) throw e_2.error; }
-                    }
-                    shouts.push({
-                        id: shout.id,
-                        author: {
-                            name: author ? author.name : '[Deleted User]',
-                            handler: author ? author.handler : null
-                        },
-                        content: shout.content,
-                        created_at: relativeTime(shout.createdAt),
-                        edited_at: shout.editedAt ? relativeTime(shout.editedAt) : null,
-                        editable: uid === shout.author,
-                        edit_history: editHistory
-                    });
                 }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
                 finally {
-                    _g = true;
+                    try {
+                        if (!_k && !_d && (_e = _l.return)) yield _e.call(_l);
+                    }
+                    finally { if (e_2) throw e_2.error; }
                 }
+                shouts.push({
+                    id: shout.id,
+                    author: {
+                        name: author ? author.name : '[Deleted User]',
+                        handler: author ? author.handler : null
+                    },
+                    content: shout.content,
+                    created_at: relativeTime(shout.createdAt),
+                    edited_at: shout.editedAt ? relativeTime(shout.editedAt) : null,
+                    editable: uid === shout.author,
+                    edit_history: editHistory
+                });
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }

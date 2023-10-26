@@ -99,7 +99,7 @@ exports.UserRoles = UserRoles;
         BUG_HUNTER: 'Bug Hunter',
         ALL: 'All'
     };
-})(UserRoles = exports.UserRoles || (exports.UserRoles = {}));
+})(UserRoles || (exports.UserRoles = UserRoles = {}));
 class OAuthScopes {
     constructor(bitmask) { this.bitmask = bitmask; }
     /**
@@ -209,7 +209,7 @@ exports.OAuthScopes = OAuthScopes;
             BLOCKLIST_WRITE: 'Ajouter et supprimer des utilisateurs de votre liste de blocage.'
         }
     };
-})(OAuthScopes = exports.OAuthScopes || (exports.OAuthScopes = {}));
+})(OAuthScopes || (exports.OAuthScopes = OAuthScopes = {}));
 var Blacklist;
 (function (Blacklist) {
     let FLAGS;
@@ -219,5 +219,5 @@ var Blacklist;
         FLAGS[FLAGS["COMMISSIONS"] = 2] = "COMMISSIONS";
         FLAGS[FLAGS["BANNED"] = 4] = "BANNED";
     })(FLAGS = Blacklist.FLAGS || (Blacklist.FLAGS = {}));
-})(Blacklist = exports.Blacklist || (exports.Blacklist = {}));
+})(Blacklist || (exports.Blacklist = Blacklist = {}));
 //# sourceMappingURL=db-utils.js.map

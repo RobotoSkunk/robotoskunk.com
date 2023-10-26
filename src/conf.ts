@@ -48,7 +48,7 @@ const conf = {
 			'picarto': 'https://picarto.tv/RobotoSkunk',
 			'deviantart': 'https://www.deviantart.com/robotogamer98',
 			'gamejolt': 'https://gamejolt.com/@RobotoSkunk',
-			'reddit': 'https://www.reddit.com/user/RealRobotoSkunk',
+			'reddit': 'https://www.reddit.com/user/RobotoSkunk_',
 			'twitch': 'https://www.twitch.tv/robotoskunk'
 		}
 	},

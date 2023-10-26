@@ -222,7 +222,7 @@ exports.Shout = Shout;
         Code[Code["MAXIMUM_EDITS"] = 4] = "MAXIMUM_EDITS";
         Code[Code["RATE_LIMITED"] = 5] = "RATE_LIMITED";
     })(Code = Shout.Code || (Shout.Code = {}));
-})(Shout = exports.Shout || (exports.Shout = {}));
+})(Shout || (exports.Shout = Shout = {}));
 class PasswordToken extends db_esentials_1.Token {
     constructor(id, validator, createdAt, expiresAt, uid) {
         super(id, validator, createdAt, expiresAt);
@@ -386,7 +386,7 @@ exports.UserAuditLog = UserAuditLog;
         Type[Type["FAILED_SECURITY_ACCESS"] = 15] = "FAILED_SECURITY_ACCESS";
         Type[Type["FAILED_PASSWORD_CHANGE"] = 16] = "FAILED_PASSWORD_CHANGE";
     })(Type = UserAuditLog.Type || (UserAuditLog.Type = {}));
-})(UserAuditLog = exports.UserAuditLog || (exports.UserAuditLog = {}));
+})(UserAuditLog || (exports.UserAuditLog = UserAuditLog = {}));
 class Config {
     static Get(key) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -512,5 +512,5 @@ exports.Commissions = Commissions;
         Status[Status["PAID"] = 4] = "PAID";
         Status[Status["EXPIRED"] = 5] = "EXPIRED";
     })(Status = Commissions.Status || (Commissions.Status = {}));
-})(Commissions = exports.Commissions || (exports.Commissions = {}));
+})(Commissions || (exports.Commissions = Commissions = {}));
 //# sourceMappingURL=db.js.map

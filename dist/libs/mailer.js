@@ -103,5 +103,5 @@ exports.Mailer = Mailer;
         Mode[Mode["Internal"] = 1] = "Internal";
         Mode[Mode["Production"] = 2] = "Production";
     })(Mode = Mailer.Mode || (Mailer.Mode = {}));
-})(Mailer = exports.Mailer || (exports.Mailer = {}));
+})(Mailer || (exports.Mailer = Mailer = {}));
 //# sourceMappingURL=mailer.js.map

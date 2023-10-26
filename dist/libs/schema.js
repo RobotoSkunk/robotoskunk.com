@@ -27,7 +27,7 @@ var Schema;
             return false;
         }
     };
-})(Schema = exports.Schema || (exports.Schema = {}));
+})(Schema || (exports.Schema = Schema = {}));
 exports.CollectSchema = {
     fields: {
         url: 'string',

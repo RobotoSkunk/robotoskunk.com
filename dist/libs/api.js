@@ -226,5 +226,5 @@ var API;
             Role[Role["OWNER"] = 2] = "OWNER";
         })(Role = Team.Role || (Team.Role = {}));
     })(Team = API.Team || (API.Team = {}));
-})(API = exports.API || (exports.API = {}));
+})(API || (exports.API = API = {}));
 //# sourceMappingURL=api.js.map

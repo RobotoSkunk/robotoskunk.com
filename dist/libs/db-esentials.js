@@ -439,7 +439,7 @@ exports.Email = Email;
         'noreply-purchases', 'message', 'messages', 'no-responder', 'dominospizzamx', 'friendupdates',
         'mailer', 'reply'
     ];
-})(Email = exports.Email || (exports.Email = {}));
+})(Email || (exports.Email = Email = {}));
 class Token {
     constructor(id, validator, createdAt, expiresAt) {
         this.id = id;
@@ -1516,5 +1516,5 @@ exports.User = User;
         Code[Code["ALREADY_EXISTS"] = 16] = "ALREADY_EXISTS";
         Code[Code["MINOR"] = 32] = "MINOR";
     })(Code = User.Code || (User.Code = {}));
-})(User = exports.User || (exports.User = {}));
+})(User || (exports.User = User = {}));
 //# sourceMappingURL=db-esentials.js.map

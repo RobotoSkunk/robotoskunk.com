@@ -147,20 +147,15 @@ router.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         yield user.LoadFullData();
         const sessions = [];
         try {
-            for (var _d = true, _e = __asyncValues(tokenData.token.GetAllByUser()), _f; _f = yield _e.next(), _a = _f.done, !_a;) {
+            for (var _d = true, _e = __asyncValues(tokenData.token.GetAllByUser()), _f; _f = yield _e.next(), _a = _f.done, !_a; _d = true) {
                 _c = _f.value;
                 _d = false;
-                try {
-                    const session = _c;
-                    const userAgent = express_useragent_1.default.parse(session.client);
-                    session.userAgent = userAgent;
-                    session.device = userAgent.isTablet ? 'tablet' : (userAgent.isMobile ? 'mobile' : 'desktop');
-                    session.isCurrent = session.id === tokenData.token.id;
-                    sessions.push(session);
-                }
-                finally {
-                    _d = true;
-                }
+                const session = _c;
+                const userAgent = express_useragent_1.default.parse(session.client);
+                session.userAgent = userAgent;
+                session.device = userAgent.isTablet ? 'tablet' : (userAgent.isMobile ? 'mobile' : 'desktop');
+                session.isCurrent = session.id === tokenData.token.id;
+                sessions.push(session);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -319,22 +314,17 @@ router.post('/security', (req, res, next) => __awaiter(void 0, void 0, void 0, f
         const tokenData = __res.tokenData;
         const emails = [], auditLog = [];
         try {
-            for (var _o = true, _p = __asyncValues(user.GetEmails()), _q; _q = yield _p.next(), _g = _q.done, !_g;) {
+            for (var _o = true, _p = __asyncValues(user.GetEmails()), _q; _q = yield _p.next(), _g = _q.done, !_g; _o = true) {
                 _j = _q.value;
                 _o = false;
-                try {
-                    const email = _j;
-                    emails.push({
-                        'id': email.id,
-                        'email': yield email.Read(yield user.GetCryptoKey()),
-                        'type': email.type,
-                        'verified': email.verified,
-                        'createdAt': email.createdAt.getTime()
-                    });
-                }
-                finally {
-                    _o = true;
-                }
+                const email = _j;
+                emails.push({
+                    'id': email.id,
+                    'email': yield email.Read(yield user.GetCryptoKey()),
+                    'type': email.type,
+                    'verified': email.verified,
+                    'createdAt': email.createdAt.getTime()
+                });
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -345,20 +335,15 @@ router.post('/security', (req, res, next) => __awaiter(void 0, void 0, void 0, f
             finally { if (e_2) throw e_2.error; }
         }
         try {
-            for (var _r = true, _s = __asyncValues(db_1.UserAuditLog.FetchPage(user.id, 0)), _t; _t = yield _s.next(), _k = _t.done, !_k;) {
+            for (var _r = true, _s = __asyncValues(db_1.UserAuditLog.FetchPage(user.id, 0)), _t; _t = yield _s.next(), _k = _t.done, !_k; _r = true) {
                 _m = _t.value;
                 _r = false;
-                try {
-                    const entry = _m;
-                    auditLog.push({
-                        'action': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Type, entry.type),
-                        'relevance': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Relevance, entry.relevance),
-                        'createdAt': entry.createdAt.getTime()
-                    });
-                }
-                finally {
-                    _r = true;
-                }
+                const entry = _m;
+                auditLog.push({
+                    'action': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Type, entry.type),
+                    'relevance': RSEngine_1.RSMisc.EnumKey(db_1.UserAuditLog.Relevance, entry.relevance),
+                    'createdAt': entry.createdAt.getTime()
+                });
             }
         }
         catch (e_3_1) { e_3 = { error: e_3_1 }; }

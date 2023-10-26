@@ -394,8 +394,8 @@ class RSCrypto {
         });
     }
 }
-RSCrypto.algo = 'sha256';
 exports.RSCrypto = RSCrypto;
+RSCrypto.algo = 'sha256';
 class RSTime {
     static get _SECOND_() { return this.s; }
     static get _MINUTE_() { return this.m; }
@@ -426,10 +426,10 @@ class RSTime {
         return langData.n;
     }
     static Relative(date, lang = 'en') {
-        return RSTime.ToString(Date.now() - date.getTime(), lang);
+        return _a.ToString(Date.now() - date.getTime(), lang);
     }
     static RelativeAgo(date, lang = 'en') {
-        const __tmp = RSTime.Relative(date, lang);
+        const __tmp = _a.Relative(date, lang);
         if (__tmp === this.langs[lang].n)
             return __tmp;
         return this.langs[lang].ago.replace('$', __tmp);
@@ -455,6 +455,7 @@ class RSTime {
         return RSRandom.IntRange(30, 50);
     }
 }
+exports.RSTime = RSTime;
 _a = RSTime;
 RSTime.s = 1000;
 RSTime.m = _a.s * 60;
@@ -509,7 +510,6 @@ RSTime.langs = {
         ago: 'há $'
     }
 };
-exports.RSTime = RSTime;
 (function (RSTime) {
     let MONTH_INDEX;
     (function (MONTH_INDEX) {
@@ -526,6 +526,5 @@ exports.RSTime = RSTime;
         MONTH_INDEX[MONTH_INDEX["NOVEMBER"] = 10] = "NOVEMBER";
         MONTH_INDEX[MONTH_INDEX["DECEMBER"] = 11] = "DECEMBER";
     })(MONTH_INDEX = RSTime.MONTH_INDEX || (RSTime.MONTH_INDEX = {}));
-})(RSTime = exports.RSTime || (exports.RSTime = {}));
-exports.RSTime = RSTime;
+})(RSTime || (exports.RSTime = RSTime = {}));
 //# sourceMappingURL=RSEngine.js.map
