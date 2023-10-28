@@ -17,7 +17,7 @@ if (!conf.production) {
 
 phrases.push(`<!-- There's a ${(1 / (phrases.length + 1) * 100).toFixed(2)}% chance to get a phrase! -->`);
 
-export const PORT = 8000;
+export const PORT = process.env.PORT || 8000;
 
 
 // Length exception: regex can't be reduced to match 120 characters
