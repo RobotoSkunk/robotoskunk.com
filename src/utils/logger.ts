@@ -18,7 +18,7 @@ const rsFormat = winston.format.printf( ({ level, message, timestamp, ...metadat
 	return `[${timestamp}] ${level}: ${message}` + extras;
 });
 
-export function genTemplate(dirname: string, filename: string) {
+export function genTemplate() {
 	return {
 		format: winston.format.combine(
 			winston.format.errors({ stack: true }),
@@ -33,21 +33,13 @@ export function genTemplate(dirname: string, filename: string) {
 					winston.format.colorize(),
 					rsFormat
 				)
-			}),
-			new winston.transports.File({
-				level: 'warn',
-				maxFiles: 5,
-				maxsize: 1024 * 1024 * 5,
-				format: winston.format.combine( rsFormat ),
-				dirname,
-				filename
 			})
 		]
 	};
 }
 
 
-const logger = winston.createLogger(genTemplate(path.join(process.cwd(), 'logs'), 'error.log'));
+const logger = winston.createLogger(genTemplate());
 
 export const loggerStream = {
 	write: (message: string) => { logger.debug(message); }
