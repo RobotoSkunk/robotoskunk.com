@@ -1,6 +1,5 @@
 import winston from 'winston';
 import stringify from 'safe-stable-stringify';
-import path from 'path';
 
 // Logging
 const rsFormat = winston.format.printf( ({ level, message, timestamp, ...metadata }) => {
