@@ -19,6 +19,7 @@
 
 
 import express from 'express';
+import 'dotenv/config';
 
 import useragent from 'express-useragent';
 import compression from 'compression';
@@ -26,10 +27,10 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import renderExtension from './utils/render-extension';
-import minify from './utils/minify';
-import routes from './routes';
-import { loggerStream } from './utils/logger';
+import renderExtension from './utils/render-extension.js';
+import minify from './utils/minify.js';
+import routes from './routes/index.js';
+import { loggerStream } from './utils/logger.js';
 
 import crypto from 'crypto';
 

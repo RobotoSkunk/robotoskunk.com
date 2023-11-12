@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import logger from './logger';
+import logger from './logger.js';
 
 import uglify from 'uglify-js';
 import CleanCss from 'clean-css';

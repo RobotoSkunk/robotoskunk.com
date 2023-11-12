@@ -1,15 +1,6 @@
 # robotoskunk.com
 
-To install dependencies:
+Welcome to the public repositor of RobotoSkunk's website!
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run src/index.ts
-```
-
-This project was created using `bun init` in bun v0.6.13. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+This branch is a new version of the website, which is currently in development.
+The current version of the website is available in the `main` branch.

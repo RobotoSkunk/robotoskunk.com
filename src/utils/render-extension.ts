@@ -25,7 +25,7 @@ import path from 'path';
 
 import fs from 'fs/promises';
 
-import * as data from '../package.json';
+import { version } from '../config/index.js';
 
 
 // file deepcode ignore NoRateLimitingForExpensiveWebOperation: Just testing dude
@@ -53,15 +53,15 @@ export default function (req: Request, res: Response, next: NextFunction)
 					}
 
 					if (definition.source.startsWith('/')) {
-						definition.source = `${definition.source}?v=${data.version}`;
+						definition.source = `${definition.source}?v=${version}`;
 					}
 
 					txt = `<script ${definition.defer ? 'defer ' : ''}` +
 							`src="${definition.source}" nonce="${res.locals.nonce}"></script>`
 					break;
 				case 'css':
-					txt = `<link rel="preload" href="${definition.source}?v=${data.version}" as="style">` +
-							`<link rel="stylesheet" href="${definition.source}?v=${data.version}">`;
+					txt = `<link rel="preload" href="${definition.source}?v=${version}" as="style">` +
+							`<link rel="stylesheet" href="${definition.source}?v=${version}">`;
 					break;
 				case 'link':
 					txt = `<link rel="${definition.rel}" href="${definition.source}" ` +
@@ -117,7 +117,7 @@ export default function (req: Request, res: Response, next: NextFunction)
 						__body__: renderedFile,
 						__head__: res.locals.headTags,
 						__canonical__: `${res.locals.root}${req.originalUrl}`,
-						__version__: data.version
+						__version__: version
 					});
 
 					return resolve();
