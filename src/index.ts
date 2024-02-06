@@ -74,7 +74,7 @@ app.use(express.static('public', {
 	fallthrough: true
 }));
 
-app.use(renderExtension(path.join(__dirname, '..', 'views')));
+app.use(renderExtension(path.join(process.cwd(), 'views')));
 
 
 app.use((req, res, next) =>
