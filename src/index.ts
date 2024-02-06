@@ -27,12 +27,13 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import renderExtension from './utils/render-extension.js';
+import renderExtension from './plugins/render-extension.js';
 import minify from './utils/minify.js';
 import routes from './routes/index.js';
 import { loggerStream } from './utils/logger.js';
 
 import crypto from 'crypto';
+import path from 'path';
 
 
 process.env.PORT = process.env.PORT || '80';
@@ -41,8 +42,6 @@ const app = express();
 
 /// Express configuration
 app.set('etag', false);
-app.set('views', 'views');
-app.set('view engine', 'ejs');
 app.set('view cache', process.env.NODE_ENV === 'production');
 app.set('x-powered-by', false);
 app.set('trust proxy', true);
@@ -50,7 +49,6 @@ app.set('trust proxy', true);
 /// Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(useragent.express());
-app.use(renderExtension);
 app.use(compression());
 app.use(helmet());
 app.use(cors());
@@ -76,6 +74,7 @@ app.use(express.static('public', {
 	fallthrough: true
 }));
 
+app.use(renderExtension(path.join(__dirname, '..', 'views')));
 
 
 app.use((req, res, next) =>
