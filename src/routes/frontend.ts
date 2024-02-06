@@ -20,12 +20,12 @@
 
 import { Router } from 'express';
 
-import frontend from './frontend.js';
+import { view } from '../models/index.js';
 
 
 const router = Router();
 
-router.use(frontend);
+router.get('/', view('pages/index'));
 
 
 export default router;
