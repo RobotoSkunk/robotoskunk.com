@@ -30,7 +30,7 @@ export default function (views: string)
 
 	return function (req: Request, res: Response, next: NextFunction)
 	{
-		res.locals.title = process.env.WEBSITE_NAME || 'Medicep';
+		res.locals.title = process.env.WEBSITE_NAME || 'RobotoSkunk';
 
 		res.setSubtitle = (subtitle: string) =>
 		{
@@ -72,21 +72,13 @@ export default function (views: string)
 				tag: {
 					css: (file: string) =>
 					{
-						return `<link rel="preload" href="/css/${file}.css" as="style">` +
-								`<link rel="stylesheet" href="/css/${file}.css">`;
+						return `<link rel="preload" href="/assets/css/${file}.css" as="style">` +
+								`<link rel="stylesheet" href="/assets/css/${file}.css">`;
 					},
 					js: (file: string) =>
 					{
-						return `<script defer src="/js/${file}.js" nonce="${res.locals.nonce}"></script>`;
+						return `<script defer src="/assets/js/${file}.js" nonce="${res.locals.nonce}"></script>`;
 					}
-				},
-				setBackUrl: (url: string) =>
-				{
-					return `<script defer nonce="${res.locals.nonce}">
-						window.addEventListener('DOMContentLoaded', () => {
-							Navigation.setBackUrl('${url}');
-						});
-					</script>`;
 				}
 			});
 
