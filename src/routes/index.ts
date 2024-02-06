@@ -5,7 +5,7 @@ import { view } from '../models/index.js';
 
 const router = Router();
 
-router.get('/', view('index'));
+router.get('/', view('pages/index'));
 
 
 export default router;

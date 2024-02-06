@@ -21,6 +21,8 @@
 
 <%- layout('../layouts/default') %>
 
+<%~ data.tag.css('index') %>
+
 
 <div class="center">
 	<div class="main">
