@@ -12,7 +12,7 @@ licenses and restrictions.
 - [rs-web-client](https://github.com/RobotoSkunk/rs-web-client), the client side
     of robotoskunk.com.
 - [rs-web-server](https://github.com/RobotoSkunk/rs-web-server), the server side
-    of robotoskunk.com
+    of robotoskunk.com.
 
 ## Branches
 This repository contains a set of abandoned branches that were planned for
