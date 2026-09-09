@@ -1,5 +1,5 @@
-This is just a monorepo repository merging the frontend and backend part of
-my personal website, [robotoskunk.com](https://robotoskunk.com).
+This is just a monorepo merging the frontend and backend part of my personal
+website, [robotoskunk.com](https://robotoskunk.com).
 
 ## Branches
 This repository contains a set of abandoned branches that were planned for
