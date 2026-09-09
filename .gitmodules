@@ -1,0 +1,6 @@
+[submodule "client"]
+	path = client
+	url = https://github.com/RobotoSkunk/rs-web-client.git
+[submodule "server"]
+	path = server
+	url = https://github.com/RobotoSkunk/rs-web-server.git
